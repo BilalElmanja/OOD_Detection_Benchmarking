@@ -48,6 +48,3 @@ Nous encourageons les contributions à ce projet ! Si vous avez des suggestions 
 ## Licence
 
 Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-```
-
-N'oubliez pas d'ajuster le contenu selon les spécificités de votre projet, comme les détails des scripts d'exécution ou les instructions spécifiques pour l'ajout de nouveaux jeux de données. Ce modèle de `README.md` fournit une base pour une documentation claire et complète de votre projet.
