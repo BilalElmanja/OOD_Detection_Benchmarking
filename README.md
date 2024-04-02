@@ -1,6 +1,4 @@
-Voici un modèle pour le fichier `README.md` qui explique votre projet de benchmarking des méthodes de détection de données out-of-distribution (OOD) à l'aide de NMF + Mahalanobis et PCA + Mahalanobis sur divers ensembles de données. Ce modèle inclut des sections pour l'introduction, l'installation, l'utilisation, la structure du projet, et la contribution.
 
-```markdown
 # Détection de Données Out-Of-Distribution (OOD)
 
 ## Introduction
