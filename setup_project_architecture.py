@@ -4,21 +4,27 @@ import os
 project_structure = {
     "OOD-Detection-Benchmarking": {
         "datasets": {
-            "MNIST": ["Near-OOD/NotMNIST", "Near-OOD/FashionMNIST", "Far-OOD/Texture", "Far-OOD/CIFAR-10", "Far-OOD/TinyImageNet", "Far-OOD/Places365"],
-            "CIFAR-10": ["Near-OOD/CIFAR-100", "Near-OOD/TinyImageNet", "Far-OOD/MNIST", "Far-OOD/SVHN", "Far-OOD/Texture", "Far-OOD/Places365"],
-            "CIFAR-100": ["Near-OOD/CIFAR-10", "Near-OOD/TinyImageNet", "Far-OOD/MNIST", "Far-OOD/SVHN", "Far-OOD/Texture", "Far-OOD/Places365"],
-            "ImageNet-200": ["Near-OOD/SSB-hard", "Near-OOD/NINCO", "Far-OOD/iNaturalist", "Far-OOD/Texture", "Far-OOD/OpenImage-O", "Covariate-Shifted ID/ImageNet-C", "Covariate-Shifted ID/ImageNet-R", "Covariate-Shifted ID/ImageNet-v2"],
-            "ImageNet-1K": ["Near-OOD/SSB-hard", "Near-OOD/NINCO", "Far-OOD/iNaturalist", "Far-OOD/Texture", "Far-OOD/OpenImage-O", "Covariate-Shifted ID/ImageNet-C", "Covariate-Shifted ID/ImageNet-R", "Covariate-Shifted ID/ImageNet-v2"]
+            "MNIST": ["Near-OOD/NotMNIST/__init__.py", "Near-OOD/FashionMNIST/__init__.py", "Far-OOD/Texture/__init__.py", "Far-OOD/CIFAR-10/__init__.py", "Far-OOD/TinyImageNet/__init__.py", "Far-OOD/Places365/__init__.py" , "MNIST/__init__.py"],
+            "CIFAR-10": ["CIFAR-10/__init__.py", "Near-OOD/CIFAR-100/__init__.py", "Near-OOD/TinyImageNet/__init__.py", "Far-OOD/MNIST/__init__.py", "Far-OOD/SVHN/__init__.py", "Far-OOD/Texture/__init__.py", "Far-OOD/Places365/__init__.py"],
+            "CIFAR-100": ["CIFAR-100/__init__.py" ,"Near-OOD/CIFAR-10/__init__.py", "Near-OOD/TinyImageNet/__init__.py", "Far-OOD/MNIST/__init__.py", "Far-OOD/SVHN/__init__.py", "Far-OOD/Texture/__init__.py", "Far-OOD/Places365/__init__.py"],
+            "ImageNet-200": ["ImageNet-200/__init__.py","Near-OOD/SSB-hard/__init__.py", "Near-OOD/NINCO/__init__.py", "Far-OOD/iNaturalist/__init__.py", "Far-OOD/Texture/__init__.py", "Far-OOD/OpenImage-O/__init__.py", "Covariate-Shifted ID/ImageNet-C/__init__.py", "Covariate-Shifted ID/ImageNet-R/__init__.py", "Covariate-Shifted ID/ImageNet-v2/__init__.py"],
+            "ImageNet-1K": [ "ImageNet-1K/__init__.py", "Near-OOD/SSB-hard/__init__.py", "Near-OOD/NINCO", "Far-OOD/iNaturalist/__init__.py", "Far-OOD/Texture/__init__.py", "Far-OOD/OpenImage-O/__init__.py", "Covariate-Shifted ID/ImageNet-C/__init__.py", "Covariate-Shifted ID/ImageNet-R/__init__.py", "Covariate-Shifted ID/ImageNet-v2/__init__.py"]
         },
-        "models": {},
+        "models":  {
+            "MNIST": ["__init__.py"],
+            "CIFAR-10": ["__init__.py"],
+            "CIFAR-100": ["__init__.py"],
+            "ImageNet-200": ["__init__.py"],
+            "ImageNet-1K": ["__init__.py"],
+        },
         "src": {
-            "data_preprocessing": {},
-            "models": {},
-            "nmf_mahalanobis": {},
-            "pca_mahalanobis": {}
+            "data_preprocessing": ["__init__.py"],
+            "models": ["__init__.py"],
+            "nmf_mahalanobis": ["__init__.py"],
+            "pca_mahalanobis": ["__init__.py"]
         },
-        "results": {},
-        "notebooks": {},
+        "results": ["__init__.py"],
+        "notebooks": ["__init__.py"],
     }
 }
 
