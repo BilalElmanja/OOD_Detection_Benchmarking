@@ -12,6 +12,7 @@ __pycache__/
 ./models/ImageNet-200
 ./models/ImageNet-1K
 ./models/MNIST
+./data
 
 # Distribution / packaging
 .Python

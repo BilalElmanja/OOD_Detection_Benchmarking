@@ -9,7 +9,7 @@ download_id_dict = {
     # 'cifar100_res18_v1.5': '1s-1oNrRtmA0pGefxXJOUVRYpaoAML0C-',
     # 'cifar10_res18_v1.5': '1byGeYxM_PlLjT72wZsMQvP6popJeWBgt',
     # 'mnist_lenet': '13mEvYF9rVIuch8u0RVDLf_JMOk3PAYCj',
-    'imagenet200_res18_v1.5': '1ddVmwc8zmzSjdLUO84EuV4Gz1c7vhIAs',
+    'imagenet_res50': '1tgY_PsfkazLDyI1pniDMDEehntBhFyF3',
 }
 
 # Dossier de sauvegarde pour les checkpoints
@@ -41,7 +41,8 @@ checkpoints_to_download = [
     # 'imagenet200_res18_v1.5',
     # 'cifar100_res18_v1.5',
     # 'cifar10_res18_v1.5',
-    'imagenet200_res18_v1.5'
+    # 'mnist_lenet',
+    'imagenet_res50'
 ]
 
 # Télécharger les checkpoints
