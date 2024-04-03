@@ -1,8 +1,24 @@
 
 # Détection de Données Out-Of-Distribution (OOD)
 
-## Introduction
-Ce projet vise à explorer et à évaluer l'efficacité de différentes méthodes de détection de données out-of-distribution (OOD) dans les réseaux de neurones. En particulier, nous nous concentrons sur l'utilisation de l'Analyse en Composantes Principales (PCA) combinée avec la distance de Mahalanobis, ainsi que la Factorisation Matricielle Non-négative (NMF) pour identifier les entrées OOD par rapport à des données in-distribution (ID), near OOD, et far OOD. Le projet teste ces méthodes sur plusieurs jeux de données, offrant un cadre de benchmarking complet pour évaluer leur performance.
+Ce projet est dédié à l'exploration de l'efficacité de diverses méthodes de détection des données out-of-distribution (OOD) dans les réseaux de neurones. Avec la dépendance croissante envers les modèles d'apprentissage profond dans des applications critiques, assurer que ces modèles peuvent identifier et gérer les entrées OOD—des échantillons de données significativement différents de ceux vus lors de l'entraînement—est primordial pour maintenir la fiabilité et la sécurité.
+
+## Objectifs
+
+L'objectif principal est de réaliser un benchmarking des méthodes suivantes pour la détection OOD :
+
+- Probabilité Maximale du Softmax (MSP) / Score Maximal des Logits (MLS)
+- ODIN : Out-of-DIstribution Detector for Neural Networks
+- DkNN : Deep k-Nearest Neighbors
+- VIM : Variational Inference for Monte Carlo Objectives
+- Détection basée sur l'énergie
+- Score d'entropie
+- Détection basée sur la distance de Mahalanobis
+- ReAct : Détection d'out-of-distribution avec des activations rectifiées
+- Détection basée sur les matrices de Gram
+
+En plus de ces méthodes établies, notre projet introduit une approche novatrice exploitant PCA et NMF avec des calculs de distance (KNN et Mahalanobis) comme nouvelle méthode pour la détection OOD.
+
 
 ## Installation
 
