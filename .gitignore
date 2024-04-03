@@ -7,11 +7,11 @@ __pycache__/
 *.so
 
 #folders
-./model/CIFAR-10
-./model/CIFAR-100
-./model/ImageNet-200
-./model/ImageNet-1K
-./model/MNIST
+./models/CIFAR-10
+./models/CIFAR-100
+./models/ImageNet-200
+./models/ImageNet-1K
+./models/MNIST
 
 # Distribution / packaging
 .Python
