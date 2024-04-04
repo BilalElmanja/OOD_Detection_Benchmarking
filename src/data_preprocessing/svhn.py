@@ -6,18 +6,18 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-class CIFAR10(Dataset):
-    def __init__(self, train=True, transform=None):
+class SVHN(Dataset):
+    def __init__(self, train=False, transform=None):
         """
         Args:
             root_dir (string): Directory with all the images (should contain 'train' and 'test' subdirectories).
             train (bool, optional): If True, creates dataset from 'train' folder, otherwise from 'test' folder.
             transform (callable, optional): Optional transform to be applied on a sample.
         """
-        self.root_dir = "../../data/CIFAR-10"
+        self.root_dir = "../../data/svhn"
         self.train = train
         self.transform = transform
-        self.data_dir = os.path.join(self.root_dir, 'train' if self.train else 'test')
+        self.data_dir = os.path.join(self.root_dir, 'train' if self.train else '')
         self.classes = [d for d in os.listdir(self.data_dir) if os.path.isdir(os.path.join(self.data_dir, d)) and d != '.DS_Store']
         self.class_to_idx = {cls_name: i for i, cls_name in enumerate(self.classes)}
         
@@ -27,6 +27,7 @@ class CIFAR10(Dataset):
         for cls_name in self.classes:
             cls_dir = os.path.join(self.data_dir, cls_name)
             for img_name in os.listdir(cls_dir):
+                print("img_name :", img_name)
                 if img_name.split(".")[1] not in ["jpg", "png", "jpeg", "webp"] or img_name == ".DS_Store":
                     continue
                 self.image_paths.append(os.path.join(cls_dir, img_name))
@@ -47,33 +48,32 @@ class CIFAR10(Dataset):
     
 
 transform = transforms.Compose([
-    # ResNet models expect 3-channel images, but CIFAR-10 is already in this format
+    # ResNet models expect 3-channel images, but svhn is already in this format
     transforms.Resize((32, 32)),  # Ensuring the image size is 32x32
     transforms.RandomHorizontalFlip(),  # A common augmentation for image data
     transforms.ToTensor(),  # Convert images to PyTorch tensors
-    # Normalize each channel of the CIFAR-10 images using mean and std
+    # Normalize each channel of the svhn images using mean and std
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
  
 ])
 
-def get_train_dataset_cifar10():
-    # Initialize the CIFAR10 datasets for training and testing
-    train_dataset = CIFAR10( train=True, transform=transform)
+def get_train_dataset_svhn():
+    # Initialize the svhn datasets for training and testing
+    train_dataset = SVHN( train=True, transform=transform)
     # Create the DataLoaders for training and testing
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=4)
     return train_loader
 
-def get_test_dataset_cifar10():
-    # Initialize the CIFAR10 datasets for training and testing
-    test_dataset = CIFAR10( train=False, transform=transform)
+def get_test_dataset_svhn():
+    # Initialize the svhn datasets for training and testing
+    test_dataset = SVHN( train=False, transform=transform)
     # Create the DataLoaders for training and testing
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=True, num_workers=4)
     return test_loader
 
-# train_loader = get_train_dataset_cifar10()
-# test_loader = get_test_dataset_cifar10()
-
-
-
+# train_loader = get_train_dataset_svhn()
+test_loader = get_test_dataset_svhn()
+for sample in test_loader:
+    print(sample[0].size())
 
 
