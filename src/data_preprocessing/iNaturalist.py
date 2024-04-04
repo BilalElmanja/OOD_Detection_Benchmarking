@@ -59,6 +59,7 @@ transform = transforms.Compose([
 def get_train_dataset_inaturalist():
     # Initialize the inaturalist datasets for training and testing
     train_dataset = iNaturalist( train=True, transform=transform)
+    print("the length of the iNaturalist Training dataset : ", len(train_dataset))
     # Create the DataLoaders for training and testing
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=4)
     return train_loader
@@ -66,6 +67,7 @@ def get_train_dataset_inaturalist():
 def get_test_dataset_inaturalist():
     # Initialize the inaturalist datasets for training and testing
     test_dataset = iNaturalist( train=False, transform=transform)
+    print("the length of the iNaturalist Test dataset : ", len(test_dataset))
     # Create the DataLoaders for training and testing
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=True, num_workers=4)
     return test_loader

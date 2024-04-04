@@ -27,7 +27,6 @@ class SVHN(Dataset):
         for cls_name in self.classes:
             cls_dir = os.path.join(self.data_dir, cls_name)
             for img_name in os.listdir(cls_dir):
-                print("img_name :", img_name)
                 if img_name.split(".")[1] not in ["jpg", "png", "jpeg", "webp"] or img_name == ".DS_Store":
                     continue
                 self.image_paths.append(os.path.join(cls_dir, img_name))
@@ -60,6 +59,7 @@ transform = transforms.Compose([
 def get_train_dataset_svhn():
     # Initialize the svhn datasets for training and testing
     train_dataset = SVHN( train=True, transform=transform)
+    print("the length of the SVHN Training dataset : ", len(train_dataset))
     # Create the DataLoaders for training and testing
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=4)
     return train_loader
@@ -67,13 +67,14 @@ def get_train_dataset_svhn():
 def get_test_dataset_svhn():
     # Initialize the svhn datasets for training and testing
     test_dataset = SVHN( train=False, transform=transform)
+    print("the length of the SVHN Test dataset : ", len(test_dataset))
     # Create the DataLoaders for training and testing
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=True, num_workers=4)
     return test_loader
 
 # train_loader = get_train_dataset_svhn()
 test_loader = get_test_dataset_svhn()
-for sample in test_loader:
-    print(sample[0].size())
+# for sample in test_loader:
+#     print(sample[0].size())
 
 

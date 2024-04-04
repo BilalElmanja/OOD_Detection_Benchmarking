@@ -66,14 +66,15 @@ def get_train_dataset_texture():
 def get_test_dataset_texture():
     # Initialize the texture datasets for training and testing
     test_dataset = Texture( train=False, transform=transform)
+    print("the length of the Texture Test dataset : ", len(test_dataset))
     # Create the DataLoaders for training and testing
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=True, num_workers=4)
     return test_loader
 
 # train_loader = get_train_dataset_texture()
 test_loader = get_test_dataset_texture()
-for sample in test_loader:
-    print(sample[0].size())
+# for sample in test_loader:
+#     print(sample[0].size())
 
 
 

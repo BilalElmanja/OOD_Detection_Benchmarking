@@ -59,6 +59,7 @@ transform = transforms.Compose([
 def get_train_dataset_cifar10():
     # Initialize the CIFAR10 datasets for training and testing
     train_dataset = CIFAR10( train=True, transform=transform)
+    print("the length of the CIFAR-10 Training dataset : ", len(train_dataset))
     # Create the DataLoaders for training and testing
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, num_workers=4)
     return train_loader
@@ -66,12 +67,13 @@ def get_train_dataset_cifar10():
 def get_test_dataset_cifar10():
     # Initialize the CIFAR10 datasets for training and testing
     test_dataset = CIFAR10( train=False, transform=transform)
+    print("the length of the CIFAR-10 Test dataset : ", len(test_dataset))
     # Create the DataLoaders for training and testing
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=True, num_workers=4)
     return test_loader
 
-# train_loader = get_train_dataset_cifar10()
-# test_loader = get_test_dataset_cifar10()
+train_loader = get_train_dataset_cifar10()
+test_loader = get_test_dataset_cifar10()
 
 
 
