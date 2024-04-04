@@ -4,23 +4,25 @@ import zipfile
 
 # Dictionnaire des IDs de téléchargement pour les checkpoints
 download_id_dict = {
-    # 'imagenet_res50_v1.5': '15PdDMNRfnJ7f2oxW6lI-Ge4QJJH3Z0Fy',
-    # 'imagenet200_res18_v1.5': '1ddVmwc8zmzSjdLUO84EuV4Gz1c7vhIAs',
-    # 'cifar100_res18_v1.5': '1s-1oNrRtmA0pGefxXJOUVRYpaoAML0C-',
-    # 'cifar10_res18_v1.5': '1byGeYxM_PlLjT72wZsMQvP6popJeWBgt',
-    # 'mnist_lenet': '13mEvYF9rVIuch8u0RVDLf_JMOk3PAYCj',
+    'imagenet_res50_v1.5': '15PdDMNRfnJ7f2oxW6lI-Ge4QJJH3Z0Fy',
+    'imagenet200_res18_v1.5': '1ddVmwc8zmzSjdLUO84EuV4Gz1c7vhIAs',
+    'cifar100_res18_v1.5': '1s-1oNrRtmA0pGefxXJOUVRYpaoAML0C-',
+    'cifar10_res18_v1.5': '1byGeYxM_PlLjT72wZsMQvP6popJeWBgt',
     'imagenet_res50': '1tgY_PsfkazLDyI1pniDMDEehntBhFyF3',
 }
 
-# Dossier de sauvegarde pour les checkpoints
-save_dir = '../data/'
+output_dir_dict = {
+    'imagenet200_res18_v1.5' : './models/ImageNet-200/',
+    'imagenet_res50_v1.5': './models/ImageNet-1K/',
+    'cifar100_res18_v1.5': './models/CIFAR-100/',
+    'cifar10_res18_v1.5': './models/CIFAR-10/',
 
-# Vérifiez si le dossier existe, sinon créez-le
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
+}
 
 def download_checkpoint(checkpoint_name, save_dir):
     """ Télécharge et extrait le checkpoint spécifié. """
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
     file_id = download_id_dict[checkpoint_name]
     output_path = os.path.join(save_dir, checkpoint_name + '.zip')
     
@@ -33,18 +35,17 @@ def download_checkpoint(checkpoint_name, save_dir):
     
     # Supprimer le fichier zip
     os.remove(output_path)
-    print(f"{checkpoint_name} téléchargé et extrait dans {save_dir}")
+    print(f"{checkpoint_name} donwloaded and saved at : {save_dir}")
 
 # Liste des checkpoints à télécharger
 checkpoints_to_download = [
-    # 'imagenet_res50_v1.5',
-    # 'imagenet200_res18_v1.5',
-    # 'cifar100_res18_v1.5',
-    # 'cifar10_res18_v1.5',
-    # 'mnist_lenet',
+    'imagenet_res50_v1.5',
+    'imagenet200_res18_v1.5',
+    'cifar100_res18_v1.5',
+    'cifar10_res18_v1.5',
     'imagenet_res50'
 ]
 
 # Télécharger les checkpoints
 for checkpoint in checkpoints_to_download:
-    download_checkpoint(checkpoint, save_dir)
+    download_checkpoint(checkpoint, output_dir_dict[checkpoint])

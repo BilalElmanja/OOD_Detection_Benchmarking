@@ -1,6 +1,5 @@
+import torch
 from torchvision.models.resnet import BasicBlock, ResNet
-
-
 
 
 class ResNet18_224x224(ResNet):
@@ -74,3 +73,25 @@ class ResNet18_224x224(ResNet):
 
     def get_fc_layer(self):
         return self.fc
+    
+
+
+# all the available checkpoints based on dataset
+datasets_checkpoints = {
+    'ImageNet-200-s0' : '../../models/ImageNet-200/imagenet200_resnet18_224x224_base_e90_lr0.1_default/s0/best.ckpt',
+    'ImageNet-200-s1' : '../../models/ImageNet-200/imagenet200_resnet18_224x224_base_e90_lr0.1_default/s1/best.ckpt',
+    'ImageNet-200-s2' : '../../models/ImageNet-200/imagenet200_resnet18_224x224_base_e90_lr0.1_default/s2/best.ckpt',
+}
+
+def load_pretrained_weights(dataset='ImageNet-200-s0', model_version='s0', num_classes=200):
+    # get the full checkpoint
+    full_checkpoint = dataset + '-' + model_version
+    checkpoint_path = datasets_checkpoints[full_checkpoint]
+    model = ResNet18_224x224(num_classes=num_classes)
+    # Charger les poids pré-entraînés
+    state_dict = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+    # Charger le dictionnaire d'état dans le modèle
+    model.load_state_dict(state_dict)
+    print("Model pretrained weight have been successfully loaded !")
+    return model
+

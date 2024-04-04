@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -21,6 +22,7 @@ class BasicBlock(nn.Module):
                                padding=1,
                                bias=False)
         self.bn2 = nn.BatchNorm2d(planes)
+
 
         self.shortcut = nn.Sequential()
         if stride != 1 or in_planes != self.expansion * planes:
@@ -165,3 +167,35 @@ class ResNet18_32x32(nn.Module):
 
     def get_fc_layer(self):
         return self.fc
+
+# all the available checkpoints based on dataset
+datasets_checkpoints = {
+    'CIFAR-10-s0' : '../../models/CIFAR-10/cifar10_resnet18_32x32_base_e100_lr0.1_default/s0/best.ckpt',
+    'CIFAR-10-s1' : '../../models/CIFAR-10/cifar10_resnet18_32x32_base_e100_lr0.1_default/s1/best.ckpt',
+    'CIFAR-10-s2' : '../../models/CIFAR-10/cifar10_resnet18_32x32_base_e100_lr0.1_default/s2/best.ckpt',
+    'CIFAR-100-s0' : '../../models/CIFAR-100/cifar100_resnet18_32x32_base_e100_lr0.1_default/s0/best.ckpt',
+    'CIFAR-100-s1' : '../../models/CIFAR-100/cifar100_resnet18_32x32_base_e100_lr0.1_default/s1/best.ckpt',
+    'CIFAR-100-s2' : '../../models/CIFAR-100/cifar100_resnet18_32x32_base_e100_lr0.1_default/s2/best.ckpt',
+
+}
+
+def load_pretrained_weights(dataset='CIFAR-10', model_version='s0'):
+    # get the full checkpoint
+    full_checkpoint = dataset + '-' + model_version
+    checkpoint_path = datasets_checkpoints[full_checkpoint]
+    print("checkpoint_path : ", checkpoint_path)
+    model = ResNet18_32x32()
+    # Charger les poids pré-entraînés
+    state_dict = torch.load(checkpoint_path, map_location=torch.device('cpu'))
+    # Charger le dictionnaire d'état dans le modèle
+    model.load_state_dict(state_dict)
+    print("Model pretrained weight have been successfully loaded !")
+    return model
+
+
+
+
+model = load_pretrained_weights()
+print(model)
+
+
