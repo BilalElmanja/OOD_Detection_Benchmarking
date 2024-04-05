@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import sys
+import os
 
 
 class BasicBlock(nn.Module):
@@ -79,9 +81,9 @@ class Bottleneck(nn.Module):
         return out
 
 
-class ResNet18_32x32(nn.Module):
+class ResNet18_32(nn.Module):
     def __init__(self, block=BasicBlock, num_blocks=None, num_classes=10):
-        super(ResNet18_32x32, self).__init__()
+        super(ResNet18_32, self).__init__()
         if num_blocks is None:
             num_blocks = [2, 2, 2, 2]
         self.in_planes = 64
@@ -179,12 +181,12 @@ datasets_checkpoints = {
 
 }
 
-def load_pretrained_weights(dataset='CIFAR-10', model_version='s0'):
+def load_pretrained_weights_32(dataset='CIFAR-10', model_version='s0'):
     # get the full checkpoint
     full_checkpoint = dataset + '-' + model_version
     checkpoint_path = datasets_checkpoints[full_checkpoint]
     print("checkpoint_path : ", checkpoint_path)
-    model = ResNet18_32x32()
+    model = ResNet18_32()
     # Charger les poids pré-entraînés
     state_dict = torch.load(checkpoint_path, map_location=torch.device('cpu'))
     # Charger le dictionnaire d'état dans le modèle
@@ -195,7 +197,7 @@ def load_pretrained_weights(dataset='CIFAR-10', model_version='s0'):
 
 
 
-model = load_pretrained_weights()
+model = load_pretrained_weights_32()
 print(model)
 
 
