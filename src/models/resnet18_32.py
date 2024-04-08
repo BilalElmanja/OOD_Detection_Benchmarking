@@ -196,8 +196,3 @@ def load_pretrained_weights_32(dataset='CIFAR-10', model_version='s0'):
 
 
 
-
-model = load_pretrained_weights_32()
-print(model)
-
-

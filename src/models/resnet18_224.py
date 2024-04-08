@@ -94,6 +94,3 @@ def load_pretrained_weights_224(dataset='ImageNet-200', model_version='s0', num_
     model.load_state_dict(state_dict)
     print("Model pretrained weight have been successfully loaded !")
     return model
-
-model = load_pretrained_weights_224()
-print(model)
