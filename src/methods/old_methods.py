@@ -6,7 +6,7 @@ from oodeel.methods import MLS, ODIN, DKNN, VIM, Energy, Entropy, Mahalanobis, G
 Mls = MLS()
 Odin = ODIN(temperature=1000)
 Dknn = DKNN(nearest=50)
-Vim = VIM(princ_dims=500)
+Vim = VIM(princ_dims=10)
 energy = Energy()
 entropy = Entropy()
 mahalanobis = Mahalanobis(eps=0.002)
