@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.covariance import MinCovDet
+import torch
+from scipy.spatial.distance import mahalanobis
 from joblib import Parallel, delayed
 import cupy as cp
 
@@ -10,8 +12,8 @@ def calculate_distance_for_single_test_example(W_train, test_example, MCD):
     N = W_train.shape[0]
     distances = np.zeros(N)
     for j in range(N):
-        diff = W_train[j, :] - test_example
-        distance = np.sqrt(diff.dot(MCD.precision_).dot(diff.T))
+        # diff = W_train[j, :] - test_example
+        distance = mahalanobis(W_train[j, :], test_example, MCD.precision_)
         distances[j] = distance
     return distances
 
@@ -21,6 +23,8 @@ def calculate_mahalanobis_distance_parallel(W_train, W_test, MCD):
     results = Parallel(n_jobs=-1)(delayed(calculate_distance_for_single_test_example)(W_train, W_test[i, :], MCD) for i in range(M))
     distance_matrix = np.array(results)
     return distance_matrix
+    
+  
 
 
 class PCA_MAHALANOBIS(OODBaseDetector):
@@ -58,7 +62,7 @@ class PCA_MAHALANOBIS(OODBaseDetector):
       labels_train = training_features[1]["labels"]
       
       # Appliquer PCA
-      pca = PCA(n_components=8)
+      pca = PCA(n_components=9)
       self.W_train = pca.fit_transform(self.A_in)   # La matrice des coefficients W (N , K) de A_train dans la base H_base (K , L)
       self.H_Base = pca.components_ # la matrice de covariance ou notamment la base H_base (K , L)
       self.PCA = pca

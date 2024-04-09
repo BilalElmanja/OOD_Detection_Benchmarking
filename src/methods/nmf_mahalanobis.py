@@ -6,14 +6,16 @@ from scipy.optimize import minimize
 from oodeel.methods.base import OODBaseDetector
 from sklearn.preprocessing import StandardScaler
 from sklearn.covariance import MinCovDet
+from scipy.spatial.distance import mahalanobis
 from joblib import Parallel, delayed
+import cupy as cp
 
 def calculate_distance_for_single_test_example(W_train, test_example, MCD):
     N = W_train.shape[0]
     distances = np.zeros(N)
     for j in range(N):
-        diff = W_train[j, :] - test_example
-        distance = np.sqrt(diff.dot(MCD.precision_).dot(diff.T))
+        # diff = W_train[j, :] - test_example
+        distance = mahalanobis(W_train[j, :], test_example, MCD.precision_)
         distances[j] = distance
     return distances
 
@@ -61,7 +63,7 @@ class NMF_MAHALANOBIS(OODBaseDetector):
       labels_train = training_features[1]["labels"]
       
       # Appliquer NMF
-      nmf = NMF(n_components=8, init='random', random_state=42)
+      nmf = NMF(n_components=9, init='random', random_state=42)
       self.W_train = nmf.fit_transform(self.A_in)  # La matrice des coefficients (ou des caractéristiques latentes)
       self.H_Base = nmf.components_  # La matrice des composantes (ou la base)
       print("the shape of H_base is : ", self.H_Base.shape)

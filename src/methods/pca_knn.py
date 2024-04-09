@@ -47,7 +47,7 @@ class PCA_KNN(OODBaseDetector):
       labels_train = training_features[1]["labels"]
       
       # Appliquer PCA
-      pca = PCA(n_components=8)
+      pca = PCA(n_components=9)
       self.W_train = pca.fit_transform(self.A_in)   # La matrice des coefficients W (N , K) de A_train dans la base H_base (K , L)
       self.H_Base = pca.components_ # la matrice de covariance ou notamment la base H_base (K , L)
       self.PCA = pca

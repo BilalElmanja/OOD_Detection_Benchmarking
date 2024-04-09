@@ -20,6 +20,7 @@ class CIFAR10(Dataset):
         self.data_dir = os.path.join(self.root_dir, 'train' if self.train else 'test')
         self.classes = [d for d in os.listdir(self.data_dir) if os.path.isdir(os.path.join(self.data_dir, d)) and d != '.DS_Store']
         self.class_to_idx = {cls_name: i for i, cls_name in enumerate(self.classes)}
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         self.image_paths = []
         self.image_labels = []
@@ -42,6 +43,7 @@ class CIFAR10(Dataset):
         
         if self.transform:
             image = self.transform(image)
+            # image = image.to(self.device)
         
         return image, label
     

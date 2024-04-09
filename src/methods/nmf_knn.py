@@ -40,7 +40,7 @@ class NMF_KNN(OODBaseDetector):
       labels_train = training_features[1]["labels"]
       
       # Appliquer NMF
-      nmf = NMF(n_components=8, init='random', random_state=42)
+      nmf = NMF(n_components=9, init='random', random_state=42)
       self.W_train = nmf.fit_transform(self.A_in)  # La matrice des coefficients (ou des caractéristiques latentes)
       self.H_Base = nmf.components_  # La matrice des composantes (ou la base)
       print("the shape of H_base is : ", self.H_Base.shape)
