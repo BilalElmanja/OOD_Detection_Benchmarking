@@ -181,12 +181,12 @@ datasets_checkpoints = {
 
 }
 
-def load_pretrained_weights_32(dataset='CIFAR-10', model_version='s0'):
+def load_pretrained_weights_32(dataset='CIFAR-10', model_version='s0', num_classes=10):
     # get the full checkpoint
     full_checkpoint = dataset + '-' + model_version
     checkpoint_path = datasets_checkpoints[full_checkpoint]
     print("checkpoint_path : ", checkpoint_path)
-    model = ResNet18_32()
+    model = ResNet18_32(num_classes=num_classes)
     # Charger les poids pré-entraînés
     state_dict = torch.load(checkpoint_path, map_location=torch.device('cpu'))
     # Charger le dictionnaire d'état dans le modèle
