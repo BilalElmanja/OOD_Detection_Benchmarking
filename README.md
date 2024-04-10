@@ -7,17 +7,16 @@ Ce projet est dédié à l'exploration de l'efficacité de diverses méthodes de
 
 L'objectif principal est de réaliser un benchmarking des méthodes suivantes pour la détection OOD :
 
-- Probabilité Maximale du Softmax (MSP) / Score Maximal des Logits (MLS)
+- Score Maximal des Logits (MLS)
 - ODIN : Out-of-DIstribution Detector for Neural Networks
 - DkNN : Deep k-Nearest Neighbors
 - VIM : Variational Inference for Monte Carlo Objectives
 - Détection basée sur l'énergie
 - Score d'entropie
 - Détection basée sur la distance de Mahalanobis
-- ReAct : Détection d'out-of-distribution avec des activations rectifiées
 - Détection basée sur les matrices de Gram
 
-En plus de ces méthodes établies, notre projet introduit une approche novatrice exploitant PCA et NMF avec des calculs de distance (KNN et Mahalanobis) comme nouvelle méthode pour la détection OOD.
+En plus de ces méthodes établies, notre projet introduit une approche novatrice exploitant K-means, PCA et NMF avec des calculs de distance (KNN et Mahalanobis) comme nouvelle méthode pour la détection OOD.
 
 
 ## Installation
@@ -32,7 +31,7 @@ pip install -r requirements.txt
 
 Pour exécuter les scripts de benchmarking sur les jeux de données inclus, suivez les instructions ci-dessous :
 
-1. Placez vos ensembles de données dans le dossier approprié sous `datasets/`.
+1. Placez vos ensembles de données dans le dossier approprié sous `./data/`.
 2. Pour exécuter la méthode PCA + Mahalanobis :
 
 ```bash
@@ -51,15 +50,11 @@ Les résultats seront stockés dans le dossier `results/` correspondant.
 
 Le projet est organisé comme suit :
 
-- `datasets/` : Contient les ensembles de données organisés par type (ID, near OOD, far OOD).
+- `data/` : Contient les ensembles de données organisés par type (ID, near OOD, far OOD).
 - `models/` : Stocke les modèles pré-entraînés sur chaque ensemble de données ID.
-- `src/` : Contient le code source pour les méthodes de détection OOD et les utilitaires.
+- `src/` : Contient le code source pour les méthodes de détection OOD, le code source pour l'utilisation des modèles pre-entrainés et le preprocessing des données avant utilisation.
 - `results/` : Dossier pour stocker les résultats des benchmarks.
 - `notebooks/` : Jupyter notebooks pour l'analyse exploratoire et les visualisations.
-
-## Contribution
-
-Nous encourageons les contributions à ce projet ! Si vous avez des suggestions d'amélioration ou si vous souhaitez ajouter de nouvelles méthodes de détection OOD, veuillez ouvrir une issue ou soumettre une pull request.
 
 ## Licence
 
