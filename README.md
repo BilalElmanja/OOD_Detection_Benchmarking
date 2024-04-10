@@ -29,22 +29,7 @@ pip install -r requirements.txt
 
 ## Utilisation
 
-Pour exécuter les scripts de benchmarking sur les jeux de données inclus, suivez les instructions ci-dessous :
-
-1. Placez vos ensembles de données dans le dossier approprié sous `./data/`.
-2. Pour exécuter la méthode PCA + Mahalanobis :
-
-```bash
-python src/pca_mahalanobis/run_benchmark.py
-```
-
-3. Pour exécuter la méthode NMF + Mahalanobis :
-
-```bash
-python src/nmf_mahalanobis/run_benchmark.py
-```
-
-Les résultats seront stockés dans le dossier `results/` correspondant.
+Voir les différents notebooks dans le dossier :  `./src/test/`.  
 
 ## Structure du Projet
 
