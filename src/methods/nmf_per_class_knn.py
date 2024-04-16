@@ -21,6 +21,8 @@ class NMF_Unique_Classes_KNN(OODBaseDetector):
         
         # S'assurer que les données sont positives pour NMF
         self.A_in = A_train - np.min(A_train) + 1e-5
+        if len(self.A_in.shape) > 2:
+         self.A_in = self.A_in[:,:, 0, 0]
         # self.Scaler = StandardScaler()
         # A_train_scaled = self.Scaler.fit_transform(self.A_in)
         self.classes_ = np.unique(self.labels_train)
@@ -36,8 +38,13 @@ class NMF_Unique_Classes_KNN(OODBaseDetector):
             self.H_Bases[class_label] = H_Base_class
             self.W_trains[class_label] = W_train_class
 
+        return
+
     def _score_tensor(self, inputs):
         features, _ = self.feature_extractor.predict_tensor(inputs)
+        if len(features[0].shape) > 2:
+         features[0] = features[0][:,:, 0, 0]
+         
         A_test = self.op.convert_to_numpy(features[0].cpu())
         A_test = A_test - np.min(A_test) + 1e-5
         

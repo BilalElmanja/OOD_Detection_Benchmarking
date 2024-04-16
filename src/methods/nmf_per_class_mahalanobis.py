@@ -55,6 +55,8 @@ class NMF_Unique_Class_Mahalanobis(OODBaseDetector):
         
         # S'assurer que les données sont positives pour NMF
         self.A_in = A_train - np.min(A_train) + 1e-5
+        if len(self.A_in.shape) > 2:
+         self.A_in = self.A_in[:,:, 0, 0]
         # self.Scaler = StandardScaler()
         # A_train_scaled = self.Scaler.fit_transform(self.A_in)
         self.classes_ = np.unique(self.labels_train)
@@ -83,6 +85,9 @@ class NMF_Unique_Class_Mahalanobis(OODBaseDetector):
     def _score_tensor(self, inputs):
 
       features, logits = self.feature_extractor.predict_tensor(inputs)
+      if len(features[0].shape) > 2:
+         features[0] = features[0][:,:, 0, 0]
+         
       A_test = features[0].cpu()
       A_test = self.op.convert_to_numpy(A_test) # la matrice des données de test A_test
     #   A_test_scaled = self.Scaler.transform(A_test)

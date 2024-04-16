@@ -34,6 +34,8 @@ class K_Means(OODBaseDetector):
       logits_train = training_features[1]["logits"]
       logits_train = self.op.convert_to_numpy(logits_train)
       self.A_in = A_train
+      if len(self.A_in.shape) > 2:
+         self.A_in = self.A_in[:,:, 0, 0]
       # finding the best number of Clusters K in order to best represent the data
       # Elbow Method
     #   inertias = []
@@ -56,6 +58,7 @@ class K_Means(OODBaseDetector):
     #   print("#------------------------------------------------------------")
       # perform the k-means with optimal clusters number
       print("Performing K-means clustering...")
+      print("shape of A_in is : ", self.A_in.shape)
       kmeans = KMeans(n_clusters=self.k, random_state=42, max_iter=100).fit(self.A_in)
       print("K-means clustering Done...")
       print("#------------------------------------------------------------")
@@ -110,6 +113,9 @@ class K_Means(OODBaseDetector):
     def _score_tensor(self, inputs):
 
       features, logits = self.feature_extractor.predict_tensor(inputs)
+      
+      if len(features[0].shape) > 2:
+         features[0] = features[0][:,:, 0, 0]
       # Calculate the Euclidean distance between each sample and the centroids
       distances = cdist(features[0].cpu(), self.CAVs, 'euclidean')
       # Calculate the average distance for each sample to all centroids

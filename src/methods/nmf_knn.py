@@ -35,6 +35,8 @@ class NMF_KNN(OODBaseDetector):
       A_train = self.op.convert_to_numpy(A_train)
 
       self.A_in = A_train - np.min(A_train) + 1e-5
+      if len(self.A_in.shape) > 2:
+         self.A_in = self.A_in[:,:, 0, 0]
       
       # The training labels
       labels_train = training_features[1]["labels"]
@@ -66,6 +68,9 @@ class NMF_KNN(OODBaseDetector):
     def _score_tensor(self, inputs):
 
       features, logits = self.feature_extractor.predict_tensor(inputs)
+
+      if len(features[0].shape) > 2:
+         features[0] = features[0][:,:, 0, 0]
       A_test = features[0].cpu()
       A_test = self.op.convert_to_numpy(A_test) # la matrice des données de test A_test
       A_test = A_test - np.min(A_test) + 1e-5

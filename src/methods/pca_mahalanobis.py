@@ -51,12 +51,15 @@ class PCA_MAHALANOBIS(OODBaseDetector):
       # The activations_matrix A_train
       A_train = training_features[0][0]
       A_train = self.op.convert_to_numpy(A_train)
+      if len(A_train.shape) > 2:
+         A_train = A_train[:,:, 0, 0]
       # Standardizing the features
       self.Scaler = StandardScaler()
       A_train = self.Scaler.fit_transform(A_train)
       A_train_scaled = self.Scaler.fit_transform(A_train)
       # print("after scaling : ", A_train_scaled.shape)
       self.A_in = A_train_scaled
+      
       
       # The training labels
       labels_train = training_features[1]["labels"]
@@ -89,6 +92,9 @@ class PCA_MAHALANOBIS(OODBaseDetector):
     def _score_tensor(self, inputs):
 
       features, logits = self.feature_extractor.predict_tensor(inputs)
+      if len(features[0].shape) > 2:
+         features[0] = features[0][:,:, 0, 0]
+         
       A_test = features[0].cpu()
       A_test = self.op.convert_to_numpy(A_test) # la matrice des données de test A_test
       A_test = self.Scaler.transform(A_test)
