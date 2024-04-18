@@ -5,3 +5,7 @@ from .Place365 import Places365, get_test_dataset_places365, get_train_dataset_p
 from .svhn import SVHN, get_test_dataset_svhn, get_train_dataset_svhn
 from .Texture import Texture, get_test_dataset_texture, get_train_dataset_texture
 from .Tin import Tiny, get_test_dataset_Tiny, get_train_dataset_Tiny
+from .openimage_o import get_test_dataset_OpenImage_O
+from .NINCO import get_test_dataset_NINCO
+from .ssb_hard import get_test_dataset_SSB_hard
+

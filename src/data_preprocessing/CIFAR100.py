@@ -19,7 +19,6 @@ class CIFAR100(Dataset):
         self.transform = transform
         self.data_dir = os.path.join(self.root_dir, 'train' if self.train else 'test')
         self.classes = [d for d in os.listdir(self.data_dir) if os.path.isdir(os.path.join(self.data_dir, d)) and d != '.DS_Store']
-        print(self.classes)
         self.class_to_idx = {cls_name: i for i, cls_name in enumerate(self.classes)}
         
         self.image_paths = []

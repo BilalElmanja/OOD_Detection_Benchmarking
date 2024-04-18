@@ -19,7 +19,7 @@ class PCA_unique_class_KNN(OODBaseDetector):
       self.A_in = None
       self.labels_train = None
       self.Scaler = None
-      self.n_basis = 9
+      self.n_basis = 5 # 9 for all other tests except with the script of Yannick !!!!!!!!!!!!!
 
     def _fit_to_dataset(self, fit_dataset):
 
@@ -28,13 +28,14 @@ class PCA_unique_class_KNN(OODBaseDetector):
       # The activations_matrix A_train
       A_train = training_features[0][0]
       A_train = self.op.convert_to_numpy(A_train)
+      if len(A_train.shape) > 2:
+         A_train =A_train[:,:, 0, 0]
       # Standardizing the features
       self.Scaler = StandardScaler()
       A_train_scaled = self.Scaler.fit_transform(A_train)
       # print("after scaling : ", A_train_scaled.shape)
       self.A_in = A_train_scaled
-      if len(self.A_in.shape) > 2:
-         self.A_in = self.A_in[:,:, 0, 0]
+      
       # print("the shape of A_train is : ", self.A_in.shape)
       # The training labels
       self.labels_train = training_features[1]["labels"]

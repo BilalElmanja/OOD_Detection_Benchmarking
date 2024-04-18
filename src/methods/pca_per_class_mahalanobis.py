@@ -37,7 +37,7 @@ class PCA_Unique_Class_Mahalanobis(OODBaseDetector):
       self.A_in = None
       self.labels_train = None
       self.Scaler = None
-      self.n_basis = 9
+      self.n_basis = 5 # 9 for all other script - Yannick
 
     def _fit_to_dataset(self, fit_dataset):
       # Calculate the activations_matrix A_train for the training dataset, to calculate the PCs
@@ -45,14 +45,15 @@ class PCA_Unique_Class_Mahalanobis(OODBaseDetector):
       # The activations_matrix A_train
       A_train = training_features[0][0]
       A_train = self.op.convert_to_numpy(A_train)
+      if len(A_train.shape) > 2: 
+        A_train =A_train[:,:, 0, 0]
       # Standardizing the features
       self.Scaler = StandardScaler()
       A_train_scaled = self.Scaler.fit_transform(A_train)
       # print("after scaling : ", A_train_scaled.shape)
       self.A_in = A_train_scaled
       
-      if len(self.A_in.shape) > 2:
-         self.A_in = self.A_in[:,:, 0, 0]
+      
       # print("the shape of A_train is : ", self.A_in.shape)
       # The training labels
       self.labels_train = training_features[1]["labels"]

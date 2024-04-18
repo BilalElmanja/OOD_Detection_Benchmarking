@@ -11,12 +11,15 @@ import torch
 import torchvision
 from torchvision import transforms
 from torch.utils.data import Subset
-
+import sys
+sys.path.append("../")
 from oodeel.methods import MLS, Energy, Entropy, DKNN, Gram, Mahalanobis, ODIN, VIM
+from methods import  K_Means, PCA_KNN, NMF_KNN, PCA_MAHALANOBIS, NMF_MAHALANOBIS, PCA_unique_class_KNN, PCA_Unique_Class_Mahalanobis, NMF_Unique_Classes_KNN, NMF_Unique_Class_Mahalanobis
+from data_preprocessing import get_train_dataset_cifar10, get_test_dataset_cifar10, get_train_dataset_cifar100, get_test_dataset_cifar100, get_test_dataset_places365, get_test_dataset_svhn, get_test_dataset_texture, get_test_dataset_Tiny, get_test_dataset_NINCO, get_test_dataset_OpenImage_O, get_train_dataset_inaturalist, get_test_dataset_SSB_hard
+from models import load_pretrained_weights_32
 from oodeel.eval.metrics import bench_metrics
 from oodeel.datasets import OODDataset
 from oodeel.types import List
-
 
 # args
 parser = argparse.ArgumentParser(description="Benchmarking OOD detection methods")
@@ -33,11 +36,10 @@ device = torch.device("cpu" if args.cpu else f"cuda:{args.cuda}")
 print("Using device:", device)
 
 # paths
-model_path = os.path.expanduser("~/") + ".oodeel/saved_models"
-data_path = os.path.expanduser("~/") + ".oodeel/datasets"
+model_path = "./saved_models"
+data_path = "./datasets"
 os.makedirs(model_path, exist_ok=True)
 os.makedirs(data_path, exist_ok=True)
-
 
 # utils
 class SimpleDataset(torch.utils.data.Dataset):
@@ -55,7 +57,6 @@ class SimpleDataset(torch.utils.data.Dataset):
             img = self.transform(img)
         return img, 0
 
-
 # models
 def load_model(experiment="mnist", load_mlp=False):
     # model trained on MNIST[0-4]
@@ -69,18 +70,20 @@ def load_model(experiment="mnist", load_mlp=False):
         )
     # model trained on CIFAR10
     elif experiment == "cifar10":
-        model = torch.hub.load(
-            repo_or_dir="chenyaofo/pytorch-cifar-models",
-            model="cifar10_resnet20",
-            pretrained=True,
-            verbose=False,
-        ).to(device)
+        # model = torch.hub.load(
+        #     repo_or_dir="chenyaofo/pytorch-cifar-models",
+        #     model="cifar10_resnet20",
+        #     pretrained=True,
+        #     verbose=False,
+        # ).to(device)
+        model = load_pretrained_weights_32()
     # model trained on ImageNet
     elif experiment == "imagenet":
         weights = torchvision.models.ResNet50_Weights.IMAGENET1K_V1
         model = torchvision.models.resnet50(weights=weights).to(device)
     else:
         raise ValueError("`experiment` should be 'mnist', 'cifar10' or 'imagenet'.")
+    model.to(device)
     model.eval()
     return model
 
@@ -117,41 +120,33 @@ def load_datasets(experiment: str = "mnist", batch_size: int = 128):
             """
             x = inputs[0] / 255.0
             return tuple([x] + list(inputs[1:]))
+        
+        # prepare dataloaders
+        ds_fit = oods_fit.prepare(
+            batch_size=batch_size, preprocess_fn=preprocess_fn, shuffle=False
+        )
+        ds_in = oods_in.prepare(batch_size=batch_size, preprocess_fn=preprocess_fn)
+        ds_out_dict = {
+            name: ood_out.prepare(batch_size=batch_size, preprocess_fn=preprocess_fn)
+            for (name, ood_out) in oods_out_dict.items()
+        }
 
     # CIFAR10 vs SVHN
-    elif experiment == "cifar10":
+    if experiment == "cifar10":
         # 1a- load in-distribution dataset: CIFAR-10
-        oods_fit = OODDataset(
-            dataset_id="CIFAR10",
-            backend="torch",
-            load_kwargs={"root": data_path, "train": True, "download": True},
-        )
-        oods_in = OODDataset(
-            dataset_id="CIFAR10",
-            backend="torch",
-            load_kwargs={"root": data_path, "train": False, "download": True},
-        )
-        # 1b- load out-of-distribution dataset: SVHN
-        oods_out = OODDataset(
-            dataset_id="SVHN",
-            backend="torch",
-            load_kwargs={"root": data_path, "split": "test", "download": True},
-        )
-        oods_out_dict = {"svhn": oods_out}
-
-        # 2- preprocess function
-        def preprocess_fn(*inputs):
-            """Preprocessing function from
-            https://github.com/chenyaofo/pytorch-cifar-models
-            """
-            x = inputs[0] / 255.0
-            x = transforms.Normalize(
-                (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
-            )(x)
-            return tuple([x] + list(inputs[1:]))
+        ds_fit = get_train_dataset_cifar10()
+        ds_in = get_test_dataset_cifar10()
+        ds_out_dict = {
+            "cifar100": get_test_dataset_cifar100(),
+            "svhn" : get_test_dataset_svhn(),
+            "places365" : get_test_dataset_places365(),
+            "texture" : get_test_dataset_texture(),
+            "Tin": get_test_dataset_Tiny(),
+        }
+        
 
     elif experiment == "imagenet":
-        max_samples = 50_000
+        max_samples = 10_000
 
         # 1a- load in-distribution dataset: ImageNet
         imagenet_root = "/local_data/imagenet_cache/ILSVRC/Data/CLS-LOC"
@@ -279,19 +274,34 @@ def load_datasets(experiment: str = "mnist", batch_size: int = 128):
                 inputs[0]
             )
             return tuple([x] + list(inputs[1:]))
+        
+        # prepare dataloaders
+        ds_fit = oods_fit.prepare(
+            batch_size=batch_size, preprocess_fn=preprocess_fn, shuffle=False
+        )
+        ds_in = oods_in.prepare(batch_size=batch_size, preprocess_fn=preprocess_fn)
+        ds_out_dict = {
+            name: ood_out.prepare(batch_size=batch_size, preprocess_fn=preprocess_fn)
+            for (name, ood_out) in oods_out_dict.items()
+        }
 
     else:
         raise ValueError("`experiment` should be 'mnist' or 'cifar10'.")
 
-    # prepare dataloaders
-    ds_fit = oods_fit.prepare(
-        batch_size=batch_size, preprocess_fn=preprocess_fn, shuffle=False
-    )
-    ds_in = oods_in.prepare(batch_size=batch_size, preprocess_fn=preprocess_fn)
-    ds_out_dict = {
-        name: ood_out.prepare(batch_size=batch_size, preprocess_fn=preprocess_fn)
-        for (name, ood_out) in oods_out_dict.items()
-    }
+    print("moving data to : ", device)
+    for x, y in ds_fit:
+        x = x.to(device)
+        y = y.to(device)
+
+    for x, y in ds_in:
+        x = x.to(device)
+        y = y.to(device)
+
+    for name, ds_out in ds_out_dict.items():
+        for x, y in ds_out:
+            x = x.to(device)
+            y = y.to(device)
+       
     return ds_fit, ds_in, ds_out_dict
 
 
@@ -307,7 +317,7 @@ def Timer():
 
 
 class BenchmarkTorch:
-    REACT_DETECTORS = ["MLS", "MSP", "Energy", "Entropy", "ODIN"]
+    REACT_DETECTORS = [] # "MLS", "MSP", "Energy", "Entropy", "ODIN"]
     DETECTORS_CONFIG = {
         "MLS": {
             "class": MLS,
@@ -400,12 +410,56 @@ class BenchmarkTorch:
                 "imagenet": dict(feature_layers_id=[-2]),
             },
         },
-        "VIM": {
-            "class": VIM,
+        # "VIM": {
+        #     "class": VIM,
+        #     "kwargs": {
+        #         "mnist": dict(princ_dims=0.99),
+        #         "cifar10": dict(princ_dims=40),
+        #         "imagenet": dict(princ_dims=0.99),
+        #     },
+        #     "fit_kwargs": {
+        #         "mnist": dict(feature_layers_id=[-2]),
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "imagenet": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "Gram": {
+        #     "class": Gram,
+        #     "kwargs": {
+        #         "mnist": dict(quantile=0.2),
+        #         "cifar10": dict(),
+        #         "imagenet": dict(orders=[1, 2, 3, 4, 5]),
+        #     },
+        #     "fit_kwargs": {
+        #         "mnist": dict(feature_layers_id=["relu1", "relu2"]),
+        #         "cifar10": dict(
+        #             feature_layers_id=[
+        #                 "layer1.2.conv2",
+        #                 "layer1.2.relu",
+        #                 "layer2.2.conv2",
+        #                 "layer2.2.relu",
+        #                 "layer3.2.conv2",
+        #                 "layer3.2.relu",
+        #             ]
+        #         ),
+        #         "imagenet": dict(
+        #             feature_layers_id=[
+        #                 "maxpool",
+        #                 "layer1",
+        #                 "layer2",
+        #                 "layer3",
+        #                 "layer4",
+        #                 "avgpool",
+        #             ]
+        #         ),
+        #     },
+        # },
+        "Kmeans": {
+            "class": K_Means,
             "kwargs": {
-                "mnist": dict(princ_dims=0.99),
-                "cifar10": dict(princ_dims=40),
-                "imagenet": dict(princ_dims=0.99),
+                "mnist": dict(),
+                "cifar10": dict(),
+                "imagenet": dict(),
             },
             "fit_kwargs": {
                 "mnist": dict(feature_layers_id=[-2]),
@@ -413,35 +467,108 @@ class BenchmarkTorch:
                 "imagenet": dict(feature_layers_id=[-2]),
             },
         },
-        "Gram": {
-            "class": Gram,
+        "PCA_KNN": {
+            "class": PCA_KNN,
             "kwargs": {
-                "mnist": dict(quantile=0.2),
+                "mnist": dict(),
                 "cifar10": dict(),
-                "imagenet": dict(orders=[1, 2, 3, 4, 5]),
+                "imagenet": dict(),
             },
             "fit_kwargs": {
-                "mnist": dict(feature_layers_id=["relu1", "relu2"]),
-                "cifar10": dict(
-                    feature_layers_id=[
-                        "layer1.2.conv2",
-                        "layer1.2.relu",
-                        "layer2.2.conv2",
-                        "layer2.2.relu",
-                        "layer3.2.conv2",
-                        "layer3.2.relu",
-                    ]
-                ),
-                "imagenet": dict(
-                    feature_layers_id=[
-                        "maxpool",
-                        "layer1",
-                        "layer2",
-                        "layer3",
-                        "layer4",
-                        "avgpool",
-                    ]
-                ),
+                "mnist": dict(feature_layers_id=[-2]),
+                "cifar10": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
+            },
+        },
+        "PCA_Mahalanobis": {
+            "class": PCA_MAHALANOBIS,
+            "kwargs": {
+                "mnist": dict(),
+                "cifar10": dict(),
+                "imagenet": dict(),
+            },
+            "fit_kwargs": {
+                "mnist": dict(feature_layers_id=[-2]),
+                "cifar10": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
+            },
+        },
+        "NMF_KNN": {
+            "class": NMF_KNN,
+            "kwargs": {
+                "mnist": dict(),
+                "cifar10": dict(),
+                "imagenet": dict(),
+            },
+            "fit_kwargs": {
+                "mnist": dict(feature_layers_id=[-2]),
+                "cifar10": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
+            },
+        },
+        "NMF_Mahalanobis": {
+            "class": NMF_MAHALANOBIS,
+            "kwargs": {
+                "mnist": dict(),
+                "cifar10": dict(),
+                "imagenet": dict(),
+            },
+            "fit_kwargs": {
+                "mnist": dict(feature_layers_id=[-2]),
+                "cifar10": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
+            },
+        },
+        "PCA_per_class_knn": {
+            "class": PCA_unique_class_KNN,
+            "kwargs": {
+                "mnist": dict(),
+                "cifar10": dict(),
+                "imagenet": dict(),
+            },
+            "fit_kwargs": {
+                "mnist": dict(feature_layers_id=[-2]),
+                "cifar10": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
+            },
+        },
+        "pca_per_class_mahalanobis": {
+            "class": PCA_Unique_Class_Mahalanobis,
+            "kwargs": {
+                "mnist": dict(),
+                "cifar10": dict(),
+                "imagenet": dict(),
+            },
+            "fit_kwargs": {
+                "mnist": dict(feature_layers_id=[-2]),
+                "cifar10": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
+            },
+        },
+        "NMF_per_class": {
+            "class": NMF_Unique_Classes_KNN,
+            "kwargs": {
+                "mnist": dict(),
+                "cifar10": dict(),
+                "imagenet": dict(),
+            },
+            "fit_kwargs": {
+                "mnist": dict(feature_layers_id=[-2]),
+                "cifar10": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
+            },
+        },
+        "NMF_per_class_mahalanobis": {
+            "class": NMF_Unique_Class_Mahalanobis,
+            "kwargs": {
+                "mnist": dict(),
+                "cifar10": dict(),
+                "imagenet": dict(),
+            },
+            "fit_kwargs": {
+                "mnist": dict(feature_layers_id=[-2]),
+                "cifar10": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
             },
         },
     }
@@ -451,6 +578,7 @@ class BenchmarkTorch:
         device: torch.device,
         experiments: List[str] = ["mnist", "cifar10"],
         metrics: List[str] = ["auroc", "fpr95tpr", "tpr5fpr"],
+        
     ):
         """Benchmark class.
 
@@ -494,18 +622,18 @@ class BenchmarkTorch:
         with Timer() as t:
             detector = detector_class(**detector_kwargs)
             print("Fitting the detector...")
-            detector.fit(model, fit_dataset=ds_fit, verbose=True, **detector_fit_kwargs)
+            detector.fit(model, fit_dataset=ds_fit,  **detector_fit_kwargs)
             fit_time = t()
         # === ID scoring ===
         with Timer() as t:
             print("Scoring the detector on ID data...")
-            scores_in, _ = detector.score(ds_in, True)
+            scores_in, _ = detector.score(ds_in)
             score_time = t()
 
         # === OOD scoring ===
         for name, ds_out in ds_out_dict.items():
             print(f"Scoring the detector on OOD data ({name})...")
-            scores_out, _ = detector.score(ds_out, True)
+            scores_out, _ = detector.score(ds_out)
 
             # === metrics ===
             # auroc / fpr95
@@ -742,12 +870,12 @@ class BenchmarkTorch:
 
 
 if __name__ == "__main__":
-    dir_path = os.path.expanduser("~/") + "1_OODEEL/experiments/benchmark/results/torch"
+    dir_path = os.path.expanduser("~/") + "./results/cifar10_layer_1"
     os.makedirs(dir_path, exist_ok=True)
 
     # run benchmark
-    # benchmark = BenchmarkTorch(device, experiments=["cifar10", "mnist"])
-    benchmark = BenchmarkTorch(device, experiments=["imagenet"])
+    benchmark = BenchmarkTorch(device, experiments=["cifar10"])
+    # benchmark = BenchmarkTorch(device, experiments=["imagenet"])
     benchmark.run()
     benchmark.export_results(dir_path=dir_path)
     print("Results exported in:", dir_path)

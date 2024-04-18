@@ -42,7 +42,7 @@ class NMF_Unique_Class_Mahalanobis(OODBaseDetector):
       self.A_in = None
       self.labels_train = None
       self.Scaler = None
-      self.n_basis = 9
+      self.n_basis = 5 # 9 for all other scripts except yanncik's
       self.NMFs = {}
       self.H_Bases = {}
       self.W_trains = {}
@@ -52,11 +52,11 @@ class NMF_Unique_Class_Mahalanobis(OODBaseDetector):
         training_features = self.feature_extractor.predict(fit_dataset)
         A_train = self.op.convert_to_numpy(training_features[0][0])
         self.labels_train = self.op.convert_to_numpy(training_features[1]["labels"])
-        
+        if len(A_train.shape) > 2:
+            A_train = A_train[:,:, 0, 0]
         # S'assurer que les données sont positives pour NMF
         self.A_in = A_train - np.min(A_train) + 1e-5
-        if len(self.A_in.shape) > 2:
-         self.A_in = self.A_in[:,:, 0, 0]
+        
         # self.Scaler = StandardScaler()
         # A_train_scaled = self.Scaler.fit_transform(self.A_in)
         self.classes_ = np.unique(self.labels_train)
