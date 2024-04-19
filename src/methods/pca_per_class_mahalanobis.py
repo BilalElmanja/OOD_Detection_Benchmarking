@@ -26,10 +26,10 @@ def calculate_mahalanobis_distance_parallel(W_train, W_test, MCD):
     return distance_matrix
 
 
-
 class PCA_Unique_Class_Mahalanobis(OODBaseDetector):
     def __init__(
         self,
+        n_components=16
 
     ):
       super().__init__()
@@ -37,7 +37,7 @@ class PCA_Unique_Class_Mahalanobis(OODBaseDetector):
       self.A_in = None
       self.labels_train = None
       self.Scaler = None
-      self.n_basis = 5 # 9 for all other script - Yannick
+      self.n_components=n_components
 
     def _fit_to_dataset(self, fit_dataset):
       # Calculate the activations_matrix A_train for the training dataset, to calculate the PCs
@@ -69,7 +69,7 @@ class PCA_Unique_Class_Mahalanobis(OODBaseDetector):
         # Sélectionner les données appartenant à la classe actuelle
         A_train_class = self.A_in[self.labels_train == class_label]
         # Appliquer PCA à A_train_class
-        pca = PCA(n_components=self.n_basis)
+        pca = PCA(n_components=self.n_components)
         W_train_class = pca.fit_transform(A_train_class)
         # print("the shape of W_train for class {} is  : {}".format(class_label, W_train_class.shape))
         H_Base_class = pca.components_

@@ -35,14 +35,14 @@ def reconstruction_loss(W_flat, A_test, H_base):
 class NMF_Unique_Class_Mahalanobis(OODBaseDetector):
     def __init__(
         self,
-
+        n_components=16
     ):
       super().__init__()
       self.A_train = None
       self.A_in = None
       self.labels_train = None
       self.Scaler = None
-      self.n_basis = 5 # 9 for all other scripts except yanncik's
+      self.n_components = n_components 
       self.NMFs = {}
       self.H_Bases = {}
       self.W_trains = {}
@@ -64,7 +64,7 @@ class NMF_Unique_Class_Mahalanobis(OODBaseDetector):
         for class_label in self.classes_:
 
             A_train_class = self.A_in[self.labels_train == class_label]
-            nmf = NMF(n_components=self.n_basis, init='random', random_state=42)
+            nmf = NMF(n_components=self.n_components, init='random', random_state=42)
             W_train_class = nmf.fit_transform(A_train_class)
             H_Base_class = nmf.components_
             

@@ -4,9 +4,14 @@ from sklearn.decomposition import NMF
 from sklearn.neighbors import NearestNeighbors
 
 class NMF_Unique_Classes_KNN(OODBaseDetector):
-    def __init__(self):
+    def __init__(self, 
+                 n_components=16
+                
+                
+                
+                 ):
         super().__init__()
-        self.n_basis = 5 # 9 for all scripts except yannick's script !!!!!!!!!!!
+        self.n_components=n_components
         self.NMFs = {}  # Remplacer par NMFs pour clarté
         self.H_Bases = {}
         self.W_trains = {}
@@ -32,7 +37,7 @@ class NMF_Unique_Classes_KNN(OODBaseDetector):
         for class_label in self.classes_:
             A_train_class = self.A_in[self.labels_train == class_label]
             
-            nmf = NMF(n_components=self.n_basis, init='random', random_state=42)
+            nmf = NMF(n_components=self.n_components, init='random', random_state=42)
             W_train_class = nmf.fit_transform(A_train_class)
             H_Base_class = nmf.components_
             

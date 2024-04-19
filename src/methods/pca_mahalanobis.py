@@ -30,12 +30,12 @@ def calculate_mahalanobis_distance_parallel(W_train, W_test, MCD):
 class PCA_MAHALANOBIS(OODBaseDetector):
     def __init__(
         self,
-        n_basis: int = 10,
+        n_components=16
 
     ):
       super().__init__()
 
-      self.n_basis = n_basis
+      self.n_components = n_components
       self.A_train = None
       self.W_train = None
       self.H_Base = None
@@ -59,33 +59,16 @@ class PCA_MAHALANOBIS(OODBaseDetector):
       A_train_scaled = self.Scaler.fit_transform(A_train)
       # print("after scaling : ", A_train_scaled.shape)
       self.A_in = A_train_scaled
-      
-      
-      # The training labels
-      labels_train = training_features[1]["labels"]
-      
       # Appliquer PCA
-      pca = PCA(n_components=9)
+      pca = PCA(n_components=self.n_components)
       self.W_train = pca.fit_transform(self.A_in)   # La matrice des coefficients W (N , K) de A_train dans la base H_base (K , L)
-      self.H_Base = pca.components_ # la matrice de covariance ou notamment la base H_base (K , L)
+      self.H_Base = pca.components_ # la base H_base (K , L)
       self.PCA = pca
 
       print("the shape of W_train is  : ", self.W_train.shape)
       print("the shape of H_base is  : ", self.H_Base.shape)
-
       self.MCD = MinCovDet().fit(self.W_train)
-      
-    #   plt.figure(figsize=(14, 7))
-    #   # Visualization for feature 1 and feature 2
-    #   plt.subplot(2, 3, 1)
-    #   # plt.scatter(self.A_in[:, 0], self.A_in[:, 1], c=labels_train, cmap='viridis', alpha=0.5, edgecolor='k')
-    #   plt.scatter(self.W_train[:, 0], self.W_train[:, 1], c=labels_train, s=200, alpha=0.75, marker='X')
-    #   # plt.scatter(self.CAVs[:, 0], self.CAVs[:, 1], c='blue', s=200, alpha=0.75, marker='X')
-    #   plt.title('PCA with : Feature 1 and Feature 2' )
-    #   plt.xlabel('Feature 1')
-    #   plt.ylabel('Feature 2')
-    #   plt.tight_layout()
-    #   plt.show()
+
   
       return
 

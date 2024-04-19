@@ -13,11 +13,12 @@ from scipy.spatial.distance import cdist
 class K_Means(OODBaseDetector):
     def __init__(
         self,
+        n_centroids = 16
     ):
       super().__init__()
 
       self.CAVs = None
-      self.k = None
+      self.k = n_centroids
       self.A_train = None
       self.A_in = None
       self.A_out = None
@@ -53,7 +54,7 @@ class K_Means(OODBaseDetector):
     #   # # find the highest silhouette score
     #   highest_silhouette_score = max(silhouette_scores)
     #   best_silhouette_k = list(K_range)[silhouette_scores.index(highest_silhouette_score)]
-      self.k = 10 # best_silhouette_k
+      self.k = 16 # best_silhouette_k
     #   print("optimal k = ", self.k)
     #   print("#------------------------------------------------------------")
       # perform the k-means with optimal clusters number

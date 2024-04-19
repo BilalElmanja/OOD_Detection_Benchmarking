@@ -13,11 +13,10 @@ from sklearn.neighbors import NearestNeighbors
 
 
 
-
 class PCA_KNN(OODBaseDetector):
     def __init__(
         self,
- 
+        n_components=16
 
     ):
       super().__init__()
@@ -28,6 +27,7 @@ class PCA_KNN(OODBaseDetector):
       self.PCA = None
       self.Scaler = None
       self.Centroids = None
+      self.n_components = n_components
 
 
     def _fit_to_dataset(self, fit_dataset):
@@ -50,25 +50,13 @@ class PCA_KNN(OODBaseDetector):
       labels_train = training_features[1]["labels"]
       
       # Appliquer PCA
-      pca = PCA(n_components=9)
+      pca = PCA(n_components=self.n_components)
       self.W_train = pca.fit_transform(self.A_in)   # La matrice des coefficients W (N , K) de A_train dans la base H_base (K , L)
       self.H_Base = pca.components_ # la matrice de covariance ou notamment la base H_base (K , L)
       self.PCA = pca
 
       print("the shape of W_train is  : ", self.W_train.shape)
       print("the shape of H_base is  : ", self.H_Base.shape)
-
-    #   plt.figure(figsize=(14, 7))
-    #   # Visualization for feature 1 and feature 2
-    #   plt.subplot(2, 3, 1)
-    #   # plt.scatter(self.A_in[:, 0], self.A_in[:, 1], c=labels_train, cmap='viridis', alpha=0.5, edgecolor='k')
-    #   plt.scatter(self.W_train[:, 0], self.W_train[:, 1], c=labels_train, s=200, alpha=0.75, marker='X')
-    #   # plt.scatter(self.CAVs[:, 0], self.CAVs[:, 1], c='blue', s=200, alpha=0.75, marker='X')
-    #   plt.title('PCA with : Feature 1 and Feature 2' )
-    #   plt.xlabel('Feature 1')
-    #   plt.ylabel('Feature 2')
-    #   plt.tight_layout()
-    #   plt.show()
   
       return
 
@@ -85,7 +73,7 @@ class PCA_KNN(OODBaseDetector):
       W_test = self.PCA.transform(A_test_scaled) # la matrice des coefficients de A_test dans la base H avec taille (N_test, K)
       
       # Définir le nombre de voisins à considérer
-      k = 10
+      k = 50
 
       # Créer et ajuster le modèle kNN
       neigh = NearestNeighbors(n_neighbors=k)

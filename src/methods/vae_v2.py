@@ -18,7 +18,7 @@ import warnings
 warnings.filterwarnings("ignore")
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
-
+import seaborn as sns
 from IPython.display import clear_output
 from sklearn.metrics import accuracy_score
 import matplotlib.pyplot as plt
@@ -46,7 +46,7 @@ class Encoder(nn.Module):
         log_var = self.fc4(x)
         return mu, log_var
 
-class Decoder(nn.Module): 
+class Decoder(nn.Module):
     def __init__(self, latent_dim, output_dim):
         super(Decoder, self).__init__()
         self.fc1 = nn.Linear(latent_dim, 128)
@@ -75,6 +75,25 @@ class VAE(nn.Module):
         z = self.reparameterize(mu, log_var)
         x_reconstructed = self.decoder(z)
         return x_reconstructed, mu, log_var
+    
+    def get_latent_variables(self, x):
+        mu, log_var = self.encoder(x)
+        z = self.reparameterize(mu, log_var)
+        return z
+    
+
+def extract_latent_variables(model, dataloader):
+    model.eval()
+    latent_vars = []
+    with torch.no_grad():
+        for features in dataloader: # Ensure data is on the correct device
+            latent_var = model.get_latent_variables(features[0])
+            latent_vars.append(latent_var)
+    latent_vars = torch.cat(latent_vars, dim=0)
+    return latent_vars
+
+
+
 
 
 def train_vae(model, train_loader, epochs=100, learning_rate=2e-4):
@@ -126,6 +145,7 @@ class VAE_OOD_Detector(OODBaseDetector):
       self.model.eval()
 
 
+
     def _score_tensor(self, inputs):
         features, logits = self.feature_extractor.predict_tensor(inputs)
         if len(features[0].shape) > 2:
@@ -170,154 +190,197 @@ vae = VAE_OOD_Detector()
 vae.fit(model, feature_layers_id=[-2], fit_dataset=ds_train)
 
 print("scoring for OOD Data (svhn) ... ")
-scores_in, _ = vae.score(ds_in)
-scores_out, _ = vae.score(ds_out)
-# === metrics ===
-# auroc / fpr95
-metrics = bench_metrics(
-    (scores_in, scores_out),
-    metrics=["auroc", "fpr95tpr"],
-)
-print("=== Metrics ===")
-for k, v in metrics.items():
-    print(f"{k:<10} {v:.6f}")
-
-print("\n=== Plots ===")
-# hists / roc
-plt.figure(figsize=(13, 6))
-plt.subplot(121)
-plot_ood_scores(scores_in, scores_out, log_scale=False)
-plt.subplot(122)
-plot_roc_curve(scores_in, scores_out)
-plt.tight_layout()
-plt.savefig("./OOD_vae_cifar10_svhn_plot.png")
-
-
-
-
-
-
-
-print("scoring for OOD Data (places365) ... ")
-# scores_in, _ = vae.score(ds_in)
-ds_out = get_test_dataset_places365()
-for x, y in ds_out:
-    x = x.to(device)
-    y = y.to(device)
-
-scores_out, _ = vae.score(ds_out)
-# === metrics ===
-# auroc / fpr95
-metrics = bench_metrics(
-    (scores_in, scores_out),
-    metrics=["auroc", "fpr95tpr"],
-)
-print("=== Metrics ===")
-for k, v in metrics.items():
-    print(f"{k:<10} {v:.6f}")
-
-print("\n=== Plots ===")
-# hists / roc
-plt.figure(figsize=(13, 6))
-plt.subplot(121)
-plot_ood_scores(scores_in, scores_out, log_scale=False)
-plt.subplot(122)
-plot_roc_curve(scores_in, scores_out)
-plt.tight_layout()
-plt.savefig("./OOD_vae_cifar10_places365_plot.png")
+features_in = vae.feature_extractor.predict(ds_in)[0][0]
+features_in = features_in[:,:, 0, 0]
+features_out = vae.feature_extractor.predict(ds_out)[0][0]
+features_out = features_out[:,:, 0, 0]
+# Create a TensorDataset
+feature_dataset_in = TensorDataset(features_in)
+feature_dataset_out = TensorDataset(features_out)
+# Create a DataLoader
+data_loader_in = DataLoader(feature_dataset_in, batch_size=128, shuffle=True)
+data_loader_out = DataLoader(feature_dataset_out, batch_size=128, shuffle=True)
+# extract embeddings
+latents_in = extract_latent_variables(vae.model, data_loader_in)
+latents_out = extract_latent_variables(vae.model, data_loader_out)
+# Flatten the latent variables if necessary and convert to NumPy for easier processing
+latents_in = latents_in.cpu().numpy().flatten()
+latents_out = latents_out.cpu().numpy().flatten()
+# Visualization
+plt.figure(figsize=(12, 6))
+sns.histplot(latents_in, color="blue", label="ID", kde=True)
+sns.histplot(latents_out, color="red", label="OOD", kde=True)
+plt.title("Distribution of Latent Variables")
+plt.legend()
+plt.savefig("./latents_dist.png")
 
 
 
 
+# # === metrics ===
+# # auroc / fpr95
+# metrics = bench_metrics(
+#     (scores_in, scores_out),
+#     metrics=["auroc", "fpr95tpr"],
+# )
+# print("=== Metrics ===")
+# for k, v in metrics.items():
+#     print(f"{k:<10} {v:.6f}")
+
+# print("\n=== Plots ===")
+# # hists / roc
+# plt.figure(figsize=(13, 6))
+# plt.subplot(121)
+# plot_ood_scores(scores_in, scores_out, log_scale=False)
+# plt.subplot(122)
+# plot_roc_curve(scores_in, scores_out)
+# plt.tight_layout()
+# plt.savefig("./OOD_vae_cifar10_svhn_plot.png")
+
+
+# # Assuming id_loader and ood_loader are your DataLoader instances for ID and OOD data
+# id_latent_vars = extract_latent_variables(vae.model, train_loader)
+# ood_latent_vars = extract_latent_variables(vae.model, train_loader)
+
+# # Flatten the latent variables if necessary and convert to NumPy for easier processing
+# id_latent_vars_np = id_latent_vars.cpu().numpy().flatten()
+# ood_latent_vars_np = ood_latent_vars.cpu().numpy().flatten()
+
+
+# # Visualization
+# plt.figure(figsize=(12, 6))
+# sns.histplot(id_latent_vars_np, color="blue", label="ID", kde=True)
+# sns.histplot(ood_latent_vars_np, color="red", label="OOD", kde=True)
+# plt.title("Distribution of Latent Variables")
+# plt.legend()
+# plt.show()
 
 
 
-print("scoring for OOD Data (texture) ... ")
-# scores_in, _ = vae.score(ds_in)
-ds_out = get_test_dataset_texture()
-for x, y in ds_out:
-    x = x.to(device)
-    y = y.to(device)
-
-scores_out, _ = vae.score(ds_out)
-# === metrics ===
-# auroc / fpr95
-metrics = bench_metrics(
-    (scores_in, scores_out),
-    metrics=["auroc", "fpr95tpr"],
-)
-print("=== Metrics ===")
-for k, v in metrics.items():
-    print(f"{k:<10} {v:.6f}")
-
-print("\n=== Plots ===")
-# hists / roc
-plt.figure(figsize=(13, 6))
-plt.subplot(121)
-plot_ood_scores(scores_in, scores_out, log_scale=False)
-plt.subplot(122)
-plot_roc_curve(scores_in, scores_out)
-plt.tight_layout()
-plt.savefig("./OOD_vae_cifar10_texture_plot.png")
-
-
-print("scoring for OOD Data (Tiny) ... ")
-# scores_in, _ = vae.score(ds_in)
-ds_out = get_test_dataset_Tiny()
-for x, y in ds_out:
-    x = x.to(device)
-    y = y.to(device)
-
-scores_out, _ = vae.score(ds_out)
-# === metrics ===
-# auroc / fpr95
-metrics = bench_metrics(
-    (scores_in, scores_out),
-    metrics=["auroc", "fpr95tpr"],
-)
-print("=== Metrics ===")
-for k, v in metrics.items():
-    print(f"{k:<10} {v:.6f}")
-
-print("\n=== Plots ===")
-# hists / roc
-plt.figure(figsize=(13, 6))
-plt.subplot(121)
-plot_ood_scores(scores_in, scores_out, log_scale=False)
-plt.subplot(122)
-plot_roc_curve(scores_in, scores_out)
-plt.tight_layout()
-plt.savefig("./OOD_vae_cifar10_Tiny_plot.png")
 
 
 
-print("scoring for OOD Data (cifar100) ... ")
-# scores_in, _ = vae.score(ds_in)
-ds_out = get_test_dataset_cifar100()
-for x, y in ds_out:
-    x = x.to(device)
-    y = y.to(device)
 
-scores_out, _ = vae.score(ds_out)
-# === metrics ===
-# auroc / fpr95
-metrics = bench_metrics(
-    (scores_in, scores_out),
-    metrics=["auroc", "fpr95tpr"],
-)
-print("=== Metrics ===")
-for k, v in metrics.items():
-    print(f"{k:<10} {v:.6f}")
+# print("scoring for OOD Data (places365) ... ")
+# # scores_in, _ = vae.score(ds_in)
+# ds_out = get_test_dataset_places365()
+# for x, y in ds_out:
+#     x = x.to(device)
+#     y = y.to(device)
 
-print("\n=== Plots ===")
-# hists / roc
-plt.figure(figsize=(13, 6))
-plt.subplot(121)
-plot_ood_scores(scores_in, scores_out, log_scale=False)
-plt.subplot(122)
-plot_roc_curve(scores_in, scores_out)
-plt.tight_layout()
-plt.savefig("./OOD_vae_cifar10_cifar100_plot.png")
+# scores_out, _ = vae.score(ds_out)
+# # === metrics ===
+# # auroc / fpr95
+# metrics = bench_metrics(
+#     (scores_in, scores_out),
+#     metrics=["auroc", "fpr95tpr"],
+# )
+# print("=== Metrics ===")
+# for k, v in metrics.items():
+#     print(f"{k:<10} {v:.6f}")
+
+# print("\n=== Plots ===")
+# # hists / roc
+# plt.figure(figsize=(13, 6))
+# plt.subplot(121)
+# plot_ood_scores(scores_in, scores_out, log_scale=False)
+# plt.subplot(122)
+# plot_roc_curve(scores_in, scores_out)
+# plt.tight_layout()
+# plt.savefig("./OOD_vae_cifar10_places365_plot.png")
+
+
+
+
+
+
+
+# print("scoring for OOD Data (texture) ... ")
+# # scores_in, _ = vae.score(ds_in)
+# ds_out = get_test_dataset_texture()
+# for x, y in ds_out:
+#     x = x.to(device)
+#     y = y.to(device)
+
+# scores_out, _ = vae.score(ds_out)
+# # === metrics ===
+# # auroc / fpr95
+# metrics = bench_metrics(
+#     (scores_in, scores_out),
+#     metrics=["auroc", "fpr95tpr"],
+# )
+# print("=== Metrics ===")
+# for k, v in metrics.items():
+#     print(f"{k:<10} {v:.6f}")
+
+# print("\n=== Plots ===")
+# # hists / roc
+# plt.figure(figsize=(13, 6))
+# plt.subplot(121)
+# plot_ood_scores(scores_in, scores_out, log_scale=False)
+# plt.subplot(122)
+# plot_roc_curve(scores_in, scores_out)
+# plt.tight_layout()
+# plt.savefig("./OOD_vae_cifar10_texture_plot.png")
+
+
+# print("scoring for OOD Data (Tiny) ... ")
+# # scores_in, _ = vae.score(ds_in)
+# ds_out = get_test_dataset_Tiny()
+# for x, y in ds_out:
+#     x = x.to(device)
+#     y = y.to(device)
+
+# scores_out, _ = vae.score(ds_out)
+# # === metrics ===
+# # auroc / fpr95
+# metrics = bench_metrics(
+#     (scores_in, scores_out),
+#     metrics=["auroc", "fpr95tpr"],
+# )
+# print("=== Metrics ===")
+# for k, v in metrics.items():
+#     print(f"{k:<10} {v:.6f}")
+
+# print("\n=== Plots ===")
+# # hists / roc
+# plt.figure(figsize=(13, 6))
+# plt.subplot(121)
+# plot_ood_scores(scores_in, scores_out, log_scale=False)
+# plt.subplot(122)
+# plot_roc_curve(scores_in, scores_out)
+# plt.tight_layout()
+# plt.savefig("./OOD_vae_cifar10_Tiny_plot.png")
+
+
+
+# print("scoring for OOD Data (cifar100) ... ")
+# # scores_in, _ = vae.score(ds_in)
+# ds_out = get_test_dataset_cifar100()
+# for x, y in ds_out:
+#     x = x.to(device)
+#     y = y.to(device)
+
+# scores_out, _ = vae.score(ds_out)
+# # === metrics ===
+# # auroc / fpr95
+# metrics = bench_metrics(
+#     (scores_in, scores_out),
+#     metrics=["auroc", "fpr95tpr"],
+# )
+# print("=== Metrics ===")
+# for k, v in metrics.items():
+#     print(f"{k:<10} {v:.6f}")
+
+# print("\n=== Plots ===")
+# # hists / roc
+# plt.figure(figsize=(13, 6))
+# plt.subplot(121)
+# plot_ood_scores(scores_in, scores_out, log_scale=False)
+# plt.subplot(122)
+# plot_roc_curve(scores_in, scores_out)
+# plt.tight_layout()
+# plt.savefig("./OOD_vae_cifar10_cifar100_plot.png")
 
 
 

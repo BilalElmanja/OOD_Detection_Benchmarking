@@ -16,10 +16,11 @@ def reconstruction_loss(W_flat, A_test, H_base):
 class NMF_KNN(OODBaseDetector):
     def __init__(
         self,
+        n_components=16
 
     ):
       super().__init__()
-
+      self.n_components = n_components
       self.A_train = None
       self.W_train = None
       self.H_Base = None
@@ -42,25 +43,11 @@ class NMF_KNN(OODBaseDetector):
       labels_train = training_features[1]["labels"]
       
       # Appliquer NMF
-      nmf = NMF(n_components=9, init='random', random_state=42)
+      nmf = NMF(n_components=self.n_components, init='random', random_state=42)
       self.W_train = nmf.fit_transform(self.A_in)  # La matrice des coefficients (ou des caractéristiques latentes)
       self.H_Base = nmf.components_  # La matrice des composantes (ou la base)
       print("the shape of H_base is : ", self.H_Base.shape)
       print("the shape of W_train is  : ", self.W_train.shape)
-
-
-
-      # plt.figure(figsize=(14, 7))
-      # # Visualization for feature 1 and feature 2
-      # plt.subplot(2, 3, 1)
-      # # plt.scatter(self.A_in[:, 0], self.A_in[:, 1], c=labels_train, cmap='viridis', alpha=0.5, edgecolor='k')
-      # plt.scatter(W[:, 0], W[:, 1], c=labels_train, s=200, alpha=0.75, marker='X')
-      # plt.scatter(self.CAVs[:, 0], self.CAVs[:, 1], c='blue', s=200, alpha=0.75, marker='X')
-      # plt.title('NMF with : Feature 1 and Feature 2' )
-      # plt.xlabel('Feature 1')
-      # plt.ylabel('Feature 2')
-      # plt.tight_layout()
-      # plt.show()
   
 
       return

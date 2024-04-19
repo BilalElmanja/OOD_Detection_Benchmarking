@@ -11,6 +11,7 @@ from sklearn.neighbors import NearestNeighbors
 class PCA_unique_class_KNN(OODBaseDetector):
     def __init__(
         self,
+        n_components=16
 
 
     ):
@@ -19,7 +20,7 @@ class PCA_unique_class_KNN(OODBaseDetector):
       self.A_in = None
       self.labels_train = None
       self.Scaler = None
-      self.n_basis = 5 # 9 for all other tests except with the script of Yannick !!!!!!!!!!!!!
+      self.n_components=n_components
 
     def _fit_to_dataset(self, fit_dataset):
 
@@ -51,7 +52,7 @@ class PCA_unique_class_KNN(OODBaseDetector):
         # Sélectionner les données appartenant à la classe actuelle
         A_train_class = self.A_in[self.labels_train == class_label]
         # Appliquer PCA à A_train_class
-        pca = PCA(n_components=self.n_basis)
+        pca = PCA(n_components=self.n_components)
         W_train_class = pca.fit_transform(A_train_class)
         # print("the shape of W_train for class {} is  : {}".format(class_label, W_train_class.shape))
         H_Base_class = pca.components_

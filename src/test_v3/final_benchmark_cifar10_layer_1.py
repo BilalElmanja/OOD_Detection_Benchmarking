@@ -132,12 +132,25 @@ def load_datasets(experiment: str = "mnist", batch_size: int = 128):
         }
 
     # CIFAR10 vs SVHN
-    if experiment == "cifar10":
+    elif experiment == "cifar10":
         # 1a- load in-distribution dataset: CIFAR-10
         ds_fit = get_train_dataset_cifar10()
         ds_in = get_test_dataset_cifar10()
         ds_out_dict = {
             "cifar100": get_test_dataset_cifar100(),
+            "svhn" : get_test_dataset_svhn(),
+            "places365" : get_test_dataset_places365(),
+            "texture" : get_test_dataset_texture(),
+            "Tin": get_test_dataset_Tiny(),
+        }
+
+     # CIFAR10 vs SVHN
+    elif experiment == "cifar100":
+        # 1a- load in-distribution dataset: CIFAR-10
+        ds_fit = get_train_dataset_cifar100()
+        ds_in = get_test_dataset_cifar100()
+        ds_out_dict = {
+            "cifar10": get_test_dataset_cifar10(),
             "svhn" : get_test_dataset_svhn(),
             "places365" : get_test_dataset_places365(),
             "texture" : get_test_dataset_texture(),
@@ -286,7 +299,7 @@ def load_datasets(experiment: str = "mnist", batch_size: int = 128):
         }
 
     else:
-        raise ValueError("`experiment` should be 'mnist' or 'cifar10'.")
+        raise ValueError("`experiment` should be 'mnist' or 'cifar10' or cifar100.")
 
     print("moving data to : ", device)
     for x, y in ds_fit:
