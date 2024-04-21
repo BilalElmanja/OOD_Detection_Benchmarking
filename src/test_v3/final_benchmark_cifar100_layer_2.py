@@ -196,19 +196,21 @@ class BenchmarkTorch:
                 "cifar100": dict(feature_layers_id=[-2]),
             },
         },
-        "VIM": {
-            "class": VIM,
-            "kwargs": {
-                "mnist": dict(princ_dims=0.99),
-                "cifar10": dict(princ_dims=40),
-                "imagenet": dict(princ_dims=0.99),
-            },
-            "fit_kwargs": {
-                "mnist": dict(feature_layers_id=[-2]),
-                "cifar10": dict(feature_layers_id=[-2]),
-                "imagenet": dict(feature_layers_id=[-2]),
-            },
-        },
+        # "VIM": {
+        #     "class": VIM,
+        #     "kwargs": {
+        #         "mnist": dict(princ_dims=0.99),
+        #         "cifar10": dict(princ_dims=40),
+        #         "cifar100": dict(princ_dims=40),
+        #         "imagenet": dict(princ_dims=0.99),
+        #     },
+        #     "fit_kwargs": {
+        #         "mnist": dict(feature_layers_id=[-2]),
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(princ_dims=40),
+        #         "imagenet": dict(feature_layers_id=[-2]),
+        #     },
+        # },
         # "Gram": {
         #     "class": Gram,
         #     "kwargs": {
@@ -638,11 +640,11 @@ class BenchmarkTorch:
 
 
 if __name__ == "__main__":
-    dir_path = os.path.expanduser("~/") + "./results/cifar10_layer_2"
+    dir_path = os.path.expanduser("~/") + "./results/cifar100_layer_2"
     os.makedirs(dir_path, exist_ok=True)
 
     # run benchmark
-    benchmark = BenchmarkTorch(device, experiments=["cifar10"])
+    benchmark = BenchmarkTorch(device, experiments=["cifar100"])
     # benchmark = BenchmarkTorch(device, experiments=["imagenet"])
     benchmark.run()
     benchmark.export_results(dir_path=dir_path)

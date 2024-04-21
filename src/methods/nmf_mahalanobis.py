@@ -37,7 +37,7 @@ def reconstruction_loss(W_flat, A_test, H_base):
 class NMF_MAHALANOBIS(OODBaseDetector):
     def __init__(
         self,
-        n_components=16
+        n_components=9
     ):
       super().__init__()
       self.n_components=n_components

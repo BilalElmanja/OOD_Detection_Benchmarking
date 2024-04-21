@@ -72,7 +72,6 @@ def get_test_dataset_places365():
     return test_loader
 
 # train_loader = get_train_dataset_places365()
-test_loader = get_test_dataset_places365()
 # for sample in test_loader:
 #     print(sample[0].size())
 

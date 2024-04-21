@@ -74,7 +74,6 @@ def get_test_dataset_ImageNet_V2():
     return test_loader
 
 # train_loader = get_train_dataset_ImageNet_V2()
-test_loader = get_test_dataset_ImageNet_V2()
 
 
 

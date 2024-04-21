@@ -5,7 +5,7 @@ from sklearn.neighbors import NearestNeighbors
 
 class NMF_Unique_Classes_KNN(OODBaseDetector):
     def __init__(self, 
-                 n_components=16
+                 n_components=9
                 
                 
                 

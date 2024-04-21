@@ -13,7 +13,7 @@ from scipy.spatial.distance import cdist
 class K_Means(OODBaseDetector):
     def __init__(
         self,
-        n_centroids = 16
+        n_centroids = 10
     ):
       super().__init__()
 

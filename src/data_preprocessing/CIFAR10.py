@@ -74,8 +74,6 @@ def get_test_dataset_cifar10():
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=True, num_workers=4)
     return test_loader
 
-train_loader = get_train_dataset_cifar10()
-test_loader = get_test_dataset_cifar10()
 
 
 

@@ -73,7 +73,6 @@ def get_test_dataset_Tiny():
     return test_loader
 
 # train_loader = get_train_dataset_Tiny()
-test_loader = get_test_dataset_Tiny()
 
 
 

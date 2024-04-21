@@ -30,7 +30,7 @@ def calculate_mahalanobis_distance_parallel(W_train, W_test, MCD):
 class PCA_MAHALANOBIS(OODBaseDetector):
     def __init__(
         self,
-        n_components=16
+        n_components=9
 
     ):
       super().__init__()

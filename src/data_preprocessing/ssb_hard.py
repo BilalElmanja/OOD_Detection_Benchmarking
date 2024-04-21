@@ -74,7 +74,6 @@ def get_test_dataset_SSB_hard():
     return test_loader
 
 # train_loader = get_train_dataset_SSB_hard()
-test_loader = get_test_dataset_SSB_hard()
 
 
 

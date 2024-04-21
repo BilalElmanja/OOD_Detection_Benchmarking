@@ -73,7 +73,6 @@ def get_test_dataset_inaturalist():
     return test_loader
 
 # train_loader = get_train_dataset_inaturalist()
-test_loader = get_test_dataset_inaturalist()
 
 
 

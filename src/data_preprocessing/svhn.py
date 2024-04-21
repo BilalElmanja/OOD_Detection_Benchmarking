@@ -73,7 +73,6 @@ def get_test_dataset_svhn():
     return test_loader
 
 # train_loader = get_train_dataset_svhn()
-test_loader = get_test_dataset_svhn()
 # for sample in test_loader:
 #     print(sample[0].size())
 

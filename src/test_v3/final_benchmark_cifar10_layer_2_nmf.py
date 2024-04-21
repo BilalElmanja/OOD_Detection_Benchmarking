@@ -23,7 +23,7 @@ from oodeel.types import List
 # args
 parser = argparse.ArgumentParser(description="Benchmarking OOD detection methods")
 parser.add_argument(
-    "--cuda", type=int, default=0, help="Index of the CUDA device to use (default: 0)"
+    "--cuda", type=int, default=1, help="Index of the CUDA device to use (default: 0)"
 )
 parser.add_argument(
     "--cpu", action="store_true", help="Use CPU instead of GPU (default: False)"
@@ -117,163 +117,9 @@ def Timer():
 
 
 class BenchmarkTorch:
-    REACT_DETECTORS = ["MLS", "MSP", "Energy", "Entropy", "ODIN"]
+    REACT_DETECTORS = [] # "MLS", "MSP", "Energy", "Entropy", "ODIN"]
     DETECTORS_CONFIG = {
-        "MLS": {
-            "class": MLS,
-            "kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "MSP": {
-            "class": MLS,
-            "kwargs": {
-                "cifar10": dict(output_activation="softmax"),
-                "cifar100":dict(output_activation="softmax"),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "Energy": {
-            "class": Energy,
-            "kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "Entropy": {
-            "class": Entropy,
-            "kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "ODIN": {
-            "class": ODIN,
-            "kwargs": {
-                "cifar10": dict(temperature=1000),
-                "cifar100":dict(temperature=1000),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "DKNN": {
-            "class": DKNN,
-            "kwargs": {
-                "cifar10": dict(nearest=50),
-                "cifar100":dict(nearest=50),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "Mahalanobis": {
-            "class": Mahalanobis,
-            "kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "VIM": {
-            "class": VIM,
-            "kwargs": {
-                "mnist": dict(princ_dims=0.99),
-                "cifar10": dict(princ_dims=40),
-                "imagenet": dict(princ_dims=0.99),
-            },
-            "fit_kwargs": {
-                "mnist": dict(feature_layers_id=[-2]),
-                "cifar10": dict(feature_layers_id=[-2]),
-                "imagenet": dict(feature_layers_id=[-2]),
-            },
-        },
-        # "Gram": {
-        #     "class": Gram,
-        #     "kwargs": {
-        #         "mnist": dict(quantile=0.2),
-        #         "cifar10": dict(),
-        #         "imagenet": dict(orders=[1, 2, 3, 4, 5]),
-        #     },
-        #     "fit_kwargs": {
-        #         "mnist": dict(feature_layers_id=["relu1", "relu2"]),
-        #         "cifar10": dict(
-        #             feature_layers_id=[
-        #                 "layer1.2.conv2",
-        #                 "layer1.2.relu",
-        #                 "layer2.2.conv2",
-        #                 "layer2.2.relu",
-        #                 "layer3.2.conv2",
-        #                 "layer3.2.relu",
-        #             ]
-        #         ),
-        #         "imagenet": dict(
-        #             feature_layers_id=[
-        #                 "maxpool",
-        #                 "layer1",
-        #                 "layer2",
-        #                 "layer3",
-        #                 "layer4",
-        #                 "avgpool",
-        #             ]
-        #         ),
-        #     },
-        # },
-        "Kmeans": {
-            "class": K_Means,
-            "kwargs": {
-                "cifar10": dict( n_centroids = 16),
-                "cifar100":dict(n_centroids = 16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "PCA_KNN": {
-            "class": PCA_KNN,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100":dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "PCA_Mahalanobis": {
-            "class": PCA_MAHALANOBIS,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100":dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "NMF_KNN": {
+        "NMF_KNN_16": {
             "class": NMF_KNN,
             "kwargs": {
                 "cifar10": dict( n_components=16),
@@ -284,61 +130,51 @@ class BenchmarkTorch:
                 "cifar100": dict(feature_layers_id=[-2]),
             },
         },
-        "NMF_Mahalanobis": {
-            "class": NMF_MAHALANOBIS,
+        "NMF_KNN_32": {
+            "class": NMF_KNN,
             "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100": dict( n_components=16),
+                "cifar10": dict( n_components=32),
+                "cifar100":dict( n_components=32),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
             },
         },
-        "PCA_per_class_knn": {
-            "class": PCA_unique_class_KNN,
+        "NMF_KNN_64": {
+            "class": NMF_KNN,
             "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100": dict( n_components=16),
+                "cifar10": dict( n_components=64),
+                "cifar100":dict( n_components=64),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
             },
         },
-        "pca_per_class_mahalanobis": {
-            "class": PCA_Unique_Class_Mahalanobis,
+        "NMF_KNN_128": {
+            "class": NMF_KNN,
             "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100": dict( n_components=16),
+                "cifar10": dict( n_components=128),
+                "cifar100":dict( n_components=128),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
             },
         },
-        "NMF_per_class": {
-            "class": NMF_Unique_Classes_KNN,
+        "NMF_KNN_256": {
+            "class": NMF_KNN,
             "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100": dict( n_components=16),
+                "cifar10": dict( n_components=256),
+                "cifar100":dict( n_components=256),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
             },
         },
-        "NMF_per_class_mahalanobis": {
-            "class": NMF_Unique_Class_Mahalanobis,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100": dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
+
     }
 
     def __init__(
@@ -638,7 +474,7 @@ class BenchmarkTorch:
 
 
 if __name__ == "__main__":
-    dir_path = os.path.expanduser("~/") + "./results/cifar10_layer_2"
+    dir_path = os.path.expanduser("~/") + "./results/cifar10_layer_2_NMF"
     os.makedirs(dir_path, exist_ok=True)
 
     # run benchmark

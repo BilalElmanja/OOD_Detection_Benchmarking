@@ -74,7 +74,6 @@ def get_test_dataset_OpenImage_O():
     return test_loader
 
 # train_loader = get_train_dataset_OpenImage_O()
-test_loader = get_test_dataset_OpenImage_O()
 
 
 

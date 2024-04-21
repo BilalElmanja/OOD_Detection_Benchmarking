@@ -16,7 +16,7 @@ from sklearn.neighbors import NearestNeighbors
 class PCA_KNN(OODBaseDetector):
     def __init__(
         self,
-        n_components=16
+        n_components=9
 
     ):
       super().__init__()

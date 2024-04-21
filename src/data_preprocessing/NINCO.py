@@ -72,11 +72,6 @@ def get_test_dataset_NINCO():
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=True, num_workers=4)
     return test_loader
 
-# train_loader = get_train_dataset_NINCO()
-test_loader = get_test_dataset_NINCO()
-for sample in test_loader:
-    print(sample[0].size())
-    break
 
 
 

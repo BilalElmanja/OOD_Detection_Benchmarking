@@ -72,7 +72,6 @@ def get_test_dataset_texture():
     return test_loader
 
 # train_loader = get_train_dataset_texture()
-test_loader = get_test_dataset_texture()
 # for sample in test_loader:
 #     print(sample[0].size())
 
