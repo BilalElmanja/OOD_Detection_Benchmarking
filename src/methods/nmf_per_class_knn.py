@@ -28,8 +28,8 @@ class NMF_Unique_Classes_KNN(OODBaseDetector):
             A_train = A_train[:,:, 0, 0]
         
         # S'assurer que les données sont positives pour NMF
-        self.A_in = A_train - np.min(A_train) + 1e-5
-        
+        # self.A_in = A_train - np.min(A_train) + 1e-5
+        self.A_in = A_train
         # self.Scaler = StandardScaler()
         # A_train_scaled = self.Scaler.fit_transform(self.A_in)
         self.classes_ = np.unique(self.labels_train)
@@ -37,7 +37,7 @@ class NMF_Unique_Classes_KNN(OODBaseDetector):
         for class_label in self.classes_:
             A_train_class = self.A_in[self.labels_train == class_label]
             
-            nmf = NMF(n_components=self.n_components, init='random', random_state=42)
+            nmf = NMF(n_components=self.n_components, init='random', random_state=42, max_iter=400)
             W_train_class = nmf.fit_transform(A_train_class)
             H_Base_class = nmf.components_
             
@@ -53,18 +53,19 @@ class NMF_Unique_Classes_KNN(OODBaseDetector):
          features[0] = features[0][:,:, 0, 0]
          
         A_test = self.op.convert_to_numpy(features[0].cpu())
-        A_test = A_test - np.min(A_test) + 1e-5
-        
+
         min_distances = np.inf * np.ones(A_test.shape[0])
         
         for class_label in self.classes_:
             nmf = self.NMFs[class_label]
             W_test_class = nmf.transform(A_test)
-            
-            neigh = NearestNeighbors(n_neighbors=20)
             W_train_class = self.W_trains[class_label]
+            # print("w_test_class shape is : ", W_test_class.shape)
+            neigh = NearestNeighbors(n_neighbors=10)
             neigh.fit(W_train_class)
+
             distances, _ = neigh.kneighbors(W_test_class)
+            # print( "class : ", class_label, "shape of distances : ", distances.shape)
             min_distance = np.min(distances, axis=1)
             
             min_distances = np.minimum(min_distances, min_distance)

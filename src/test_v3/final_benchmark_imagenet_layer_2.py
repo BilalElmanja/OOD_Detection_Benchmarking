@@ -13,9 +13,9 @@ from torch.utils.data import Subset
 import sys
 sys.path.append("../")
 from oodeel.methods import MLS, Energy, Entropy, DKNN, Gram, Mahalanobis, ODIN, VIM
-from methods import  K_Means, K_Means_Mahalanobis, PCA_KNN, NMF_KNN, PCA_MAHALANOBIS, NMF_MAHALANOBIS, PCA_unique_class_KNN, PCA_Unique_Class_Mahalanobis, NMF_Unique_Classes_KNN, NMF_Unique_Class_Mahalanobis
-from data_preprocessing import get_train_dataset_cifar10, get_test_dataset_cifar10, get_train_dataset_cifar100, get_test_dataset_cifar100, get_test_dataset_places365, get_test_dataset_svhn, get_test_dataset_texture, get_test_dataset_Tiny, get_test_dataset_NINCO, get_test_dataset_OpenImage_O, get_train_dataset_inaturalist, get_test_dataset_SSB_hard
-from models import load_pretrained_weights_32
+from methods import  K_Means, PCA_KNN, NMF_KNN, PCA_MAHALANOBIS, NMF_MAHALANOBIS, PCA_unique_class_KNN, PCA_Unique_Class_Mahalanobis, NMF_Unique_Classes_KNN, NMF_Unique_Class_Mahalanobis
+from data_preprocessing import get_train_dataset_cifar10, get_test_dataset_cifar10, get_train_dataset_cifar100, get_test_dataset_cifar100, get_test_dataset_places365, get_test_dataset_svhn, get_test_dataset_texture, get_test_dataset_Tiny, get_test_dataset_NINCO, get_test_dataset_OpenImage_O, get_train_dataset_inaturalist, get_test_dataset_SSB_hard, get_train_dataset_ImageNet_1K, get_test_dataset_ImageNet_1K, get_test_dataset_inaturalist
+from models import load_pretrained_weights_32, load_pretrained_weights_224
 from oodeel.eval.metrics import bench_metrics
 from oodeel.datasets import OODDataset
 from oodeel.types import List
@@ -46,6 +46,11 @@ def load_model(experiment="cifar10", load_mlp=False):
     # model trained on CIFAR10
     elif experiment == "cifar100":
         model = load_pretrained_weights_32(dataset='CIFAR-100', model_version='s0', num_classes=100)
+
+    # model trained on CIFAR10
+    elif experiment == "imagenet":
+        weights = torchvision.models.ResNet50_Weights.IMAGENET1K_V1
+        model = torchvision.models.resnet50(weights=weights).to(device)
 
     else:
         raise ValueError("`experiment` should be 'cifar10' or 'cifar100'.")
@@ -81,8 +86,22 @@ def load_datasets(experiment: str = "cifar100", batch_size: int = 128):
             "svhn" : get_test_dataset_svhn(),
             "places365" : get_test_dataset_places365(),
             "texture" : get_test_dataset_texture(),
-            "Tin": get_test_dataset_Tiny(),
+            "openimage": get_test_dataset_Tiny(),
         }
+
+    elif experiment == "imagenet":
+        # 1a- load in-distribution dataset: CIFAR-10
+        ds_fit = get_train_dataset_ImageNet_1K()
+        ds_in = get_test_dataset_ImageNet_1K()
+        ds_out_dict = {
+            "inaturalist": get_test_dataset_inaturalist(),
+            "ninco" : get_test_dataset_NINCO(),
+            "ssb_hard" : get_test_dataset_SSB_hard(),
+            # "texture" : get_test_dataset_texture(),
+            # "places365": get_test_dataset_places365(),
+        }
+ 
+ 
 
     else:
         raise ValueError("`experiment` should be or 'cifar10' or cifar100")
@@ -116,17 +135,19 @@ def Timer():
 
 
 class BenchmarkTorch:
-    REACT_DETECTORS = ["MLS", "MSP", "Energy", "Entropy", "ODIN"]
+    REACT_DETECTORS = [ ]#"MLS", "MSP", "Energy", "Entropy", "ODIN"]
     DETECTORS_CONFIG = {
         "MLS": {
             "class": MLS,
             "kwargs": {
                 "cifar10": dict(),
                 "cifar100":dict(),
+                "imagenet":dict(),
             },
             "fit_kwargs": {
                 "cifar10": dict(),
                 "cifar100":dict(),
+                "imagenet":dict(),
             },
         },
         "MSP": {
@@ -134,10 +155,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict(output_activation="softmax"),
                 "cifar100":dict(output_activation="softmax"),
+                "imagenet":dict(output_activation="softmax"),
             },
             "fit_kwargs": {
                 "cifar10": dict(),
                 "cifar100":dict(),
+                "imagenet":dict(),
             },
         },
         "Energy": {
@@ -145,10 +168,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict(),
                 "cifar100":dict(),
+                "imagenet":dict(),
             },
             "fit_kwargs": {
                 "cifar10": dict(),
                 "cifar100":dict(),
+                "imagenet":dict(),
             },
         },
         "Entropy": {
@@ -156,10 +181,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict(),
                 "cifar100":dict(),
+                "imagenet":dict(),
             },
             "fit_kwargs": {
                 "cifar10": dict(),
                 "cifar100":dict(),
+                "imagenet":dict(),
             },
         },
         "ODIN": {
@@ -167,10 +194,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict(temperature=1000),
                 "cifar100":dict(temperature=1000),
+                "imagenet":dict(temperature=1000),
             },
             "fit_kwargs": {
                 "cifar10": dict(),
                 "cifar100":dict(),
+                "imagenet":dict(),
             },
         },
         "DKNN": {
@@ -178,10 +207,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict(nearest=50),
                 "cifar100":dict(nearest=50),
+                "imagenet":dict(nearest=50),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet":dict(feature_layers_id=[-2]),
             },
         },
         "Mahalanobis": {
@@ -189,10 +220,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict(),
                 "cifar100":dict(),
+                "imagenet":dict(),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet":dict(feature_layers_id=[-2]),
             },
         },
         # "VIM": {
@@ -200,76 +233,71 @@ class BenchmarkTorch:
         #     "kwargs": {
         #         "mnist": dict(princ_dims=0.99),
         #         "cifar10": dict(princ_dims=40),
+        #         "cifar100": dict(princ_dims=40),
         #         "imagenet": dict(princ_dims=0.99),
         #     },
         #     "fit_kwargs": {
         #         "mnist": dict(feature_layers_id=[-2]),
         #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(princ_dims=40),
         #         "imagenet": dict(feature_layers_id=[-2]),
         #     },
         # },
-        # # "Gram": {
-        # #     "class": Gram,
-        # #     "kwargs": {
-        # #         "mnist": dict(quantile=0.2),
-        # #         "cifar10": dict(),
-        # #         "imagenet": dict(orders=[1, 2, 3, 4, 5]),
-        # #     },
-        # #     "fit_kwargs": {
-        # #         "mnist": dict(feature_layers_id=["relu1", "relu2"]),
-        # #         "cifar10": dict(
-        # #             feature_layers_id=[
-        # #                 "layer1.2.conv2",
-        # #                 "layer1.2.relu",
-        # #                 "layer2.2.conv2",
-        # #                 "layer2.2.relu",
-        # #                 "layer3.2.conv2",
-        # #                 "layer3.2.relu",
-        # #             ]
-        # #         ),
-        # #         "imagenet": dict(
-        # #             feature_layers_id=[
-        # #                 "maxpool",
-        # #                 "layer1",
-        # #                 "layer2",
-        # #                 "layer3",
-        # #                 "layer4",
-        # #                 "avgpool",
-        # #             ]
-        # #         ),
-        # #     },
-        # # },
+        # "Gram": {
+        #     "class": Gram,
+        #     "kwargs": {
+        #         "mnist": dict(quantile=0.2),
+        #         "cifar10": dict(),
+        #         "imagenet": dict(orders=[1, 2, 3, 4, 5]),
+        #     },
+        #     "fit_kwargs": {
+        #         "mnist": dict(feature_layers_id=["relu1", "relu2"]),
+        #         "cifar10": dict(
+        #             feature_layers_id=[
+        #                 "layer1.2.conv2",
+        #                 "layer1.2.relu",
+        #                 "layer2.2.conv2",
+        #                 "layer2.2.relu",
+        #                 "layer3.2.conv2",
+        #                 "layer3.2.relu",
+        #             ]
+        #         ),
+        #         "imagenet": dict(
+        #             feature_layers_id=[
+        #                 "maxpool",
+        #                 "layer1",
+        #                 "layer2",
+        #                 "layer3",
+        #                 "layer4",
+        #                 "avgpool",
+        #             ]
+        #         ),
+        #     },
+        # },
         "Kmeans": {
             "class": K_Means,
             "kwargs": {
                 "cifar10": dict( n_centroids = 10),
                 "cifar100":dict(n_centroids = 10),
+                "imagenet":dict(n_centroids = 10),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet":dict(feature_layers_id=[-2]),
             },
         },
-        # "Kmeans_Mahalanobis": {
-        #     "class": K_Means_Mahalanobis,
-        #     "kwargs": {
-        #         "cifar10": dict( n_centroids = 10),
-        #         "cifar100":dict(n_centroids = 10),
-        #     },
-        #     "fit_kwargs": {
-        #         "cifar10": dict(feature_layers_id=[-2]),
-        #         "cifar100": dict(feature_layers_id=[-2]),
-        #     },
-        # },
         "PCA_KNN": {
             "class": PCA_KNN,
             "kwargs": {
                 "cifar10": dict( n_components=16),
                 "cifar100":dict( n_components=16),
+                "imagenet":dict(n_components = 16),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
             },
         },
         "PCA_Mahalanobis": {
@@ -277,10 +305,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict( n_components=16),
                 "cifar100":dict( n_components=16),
+                "imagenet":dict(n_components = 16),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
             },
         },
         "NMF_KNN": {
@@ -288,10 +318,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict( n_components=16),
                 "cifar100":dict( n_components=16),
+                "imagenet":dict(n_components = 16),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
             },
         },
         "NMF_Mahalanobis": {
@@ -299,10 +331,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict( n_components=16),
                 "cifar100": dict( n_components=16),
+                "imagenet":dict(n_components = 16),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
             },
         },
         "PCA_per_class_knn": {
@@ -310,10 +344,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict( n_components=16),
                 "cifar100": dict( n_components=16),
+                "imagenet":dict(n_components = 16),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
             },
         },
         "pca_per_class_mahalanobis": {
@@ -321,10 +357,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict( n_components=16),
                 "cifar100": dict( n_components=16),
+                "imagenet":dict(n_components = 16),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
             },
         },
         "NMF_per_class": {
@@ -332,10 +370,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict( n_components=16),
                 "cifar100": dict( n_components=16),
+                "imagenet":dict(n_components = 16),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
             },
         },
         "NMF_per_class_mahalanobis": {
@@ -343,10 +383,12 @@ class BenchmarkTorch:
             "kwargs": {
                 "cifar10": dict( n_components=16),
                 "cifar100": dict( n_components=16),
+                "imagenet":dict(n_components = 16),
             },
             "fit_kwargs": {
                 "cifar10": dict(feature_layers_id=[-2]),
                 "cifar100": dict(feature_layers_id=[-2]),
+                "imagenet": dict(feature_layers_id=[-2]),
             },
         },
     }
@@ -648,12 +690,12 @@ class BenchmarkTorch:
 
 
 if __name__ == "__main__":
-    dir_path = os.path.expanduser("~/") + "./results/cifar10_layer_2"
+    dir_path = os.path.expanduser("~/") + "./results/cifar100_layer_2"
     os.makedirs(dir_path, exist_ok=True)
 
     # run benchmark
-    benchmark = BenchmarkTorch(device, experiments=["cifar10"])
-    # benchmark = BenchmarkTorch(device, experiments=["imagenet"])
+    # benchmark = BenchmarkTorch(device, experiments=["cifar100"])
+    benchmark = BenchmarkTorch(device, experiments=["imagenet"])
     benchmark.run()
     benchmark.export_results(dir_path=dir_path)
     print("Results exported in:", dir_path)

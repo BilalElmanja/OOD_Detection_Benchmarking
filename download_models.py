@@ -9,6 +9,7 @@ download_id_dict = {
     'cifar100_res18_v1.5': '1s-1oNrRtmA0pGefxXJOUVRYpaoAML0C-',
     'cifar10_res18_v1.5': '1byGeYxM_PlLjT72wZsMQvP6popJeWBgt',
     'imagenet_res50': '1tgY_PsfkazLDyI1pniDMDEehntBhFyF3',
+    'imagenet_1k': '1i1ipLDFARR-JZ9argXd2-0a6DXwVhXEj',
 }
 
 output_dir_dict = {
@@ -16,6 +17,7 @@ output_dir_dict = {
     'imagenet_res50_v1.5': './models/ImageNet-1K/',
     'cifar100_res18_v1.5': './models/CIFAR-100/',
     'cifar10_res18_v1.5': './models/CIFAR-10/',
+    'imagenet_1k' : './data/'
 
 }
 
@@ -39,11 +41,12 @@ def download_checkpoint(checkpoint_name, save_dir):
 
 # Liste des checkpoints à télécharger
 checkpoints_to_download = [
-    'imagenet_res50_v1.5',
-    'imagenet200_res18_v1.5',
-    'cifar100_res18_v1.5',
-    'cifar10_res18_v1.5',
-    'imagenet_res50'
+    'imagenet_1k',
+    # 'imagenet_res50_v1.5',
+    # 'imagenet200_res18_v1.5',
+    # 'cifar100_res18_v1.5',
+    # 'cifar10_res18_v1.5',
+    # 'imagenet_res50'
 ]
 
 # Télécharger les checkpoints

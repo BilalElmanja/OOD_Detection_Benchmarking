@@ -52,7 +52,8 @@ transform = transforms.Compose([
     transforms.RandomHorizontalFlip(),  # A common augmentation for image data
     transforms.ToTensor(),  # Convert images to PyTorch tensors
     # Normalize each channel of the places365 images using mean and std
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    # transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)) # for cifar data
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
  
 ])
 

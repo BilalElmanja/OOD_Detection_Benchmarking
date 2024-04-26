@@ -119,6 +119,17 @@ def Timer():
 class BenchmarkTorch:
     REACT_DETECTORS = [] # "MLS", "MSP", "Energy", "Entropy", "ODIN"]
     DETECTORS_CONFIG = {
+        "PCA_KNN_10": {
+            "class": PCA_KNN,
+            "kwargs": {
+                "cifar10": dict( n_components=10),
+                "cifar100":dict( n_components=10),
+            },
+            "fit_kwargs": {
+                "cifar10": dict(feature_layers_id=[-2]),
+                "cifar100": dict(feature_layers_id=[-2]),
+            },
+        },
         "PCA_KNN_16": {
             "class": PCA_KNN,
             "kwargs": {

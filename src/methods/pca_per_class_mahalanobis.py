@@ -6,6 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neighbors import NearestNeighbors
 from scipy.spatial.distance import mahalanobis
 from sklearn.covariance import MinCovDet
+from scipy.spatial.distance import cdist
 from joblib import Parallel, delayed
 import cupy as cp
 
@@ -107,7 +108,7 @@ class PCA_Unique_Class_Mahalanobis(OODBaseDetector):
           W_train_class = self.W_trains[class_label]
           MCD = self.MCDs[class_label]  # Get the precision matrix for the class
           # Calculate Mahalanobis distance using the parallel function
-          distance_matrix = calculate_mahalanobis_distance_parallel(W_train_class, W_test_class, MCD)
+          distance_matrix = cdist(W_test_class, W_train_class, 'mahalanobis', VI=MCD.precision_)
           # For each test sample, find the minimum Mahalanobis distance across classes
           min_distance = np.min(distance_matrix, axis=1)
           min_distances = np.minimum(min_distances, min_distance)

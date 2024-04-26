@@ -6,23 +6,24 @@ from sklearn.covariance import MinCovDet
 import torch
 from scipy.spatial.distance import mahalanobis
 from joblib import Parallel, delayed
+from scipy.spatial.distance import cdist
 import cupy as cp
 
-def calculate_distance_for_single_test_example(W_train, test_example, MCD):
-    N = W_train.shape[0]
-    distances = np.zeros(N)
-    for j in range(N):
-        # diff = W_train[j, :] - test_example
-        distance = mahalanobis(W_train[j, :], test_example, MCD.precision_)
-        distances[j] = distance
-    return distances
+# def calculate_distance_for_single_test_example(W_train, test_example, MCD):
+#     N = W_train.shape[0]
+#     distances = np.zeros(N)
+#     for j in range(N):
+#         # diff = W_train[j, :] - test_example
+#         distance = mahalanobis(W_train[j, :], test_example, MCD.precision_)
+#         distances[j] = distance
+#     return distances
 
-def calculate_mahalanobis_distance_parallel(W_train, W_test, MCD):
-    M = W_test.shape[0]
-    # Utiliser joblib pour paralléliser le calcul des distances
-    results = Parallel(n_jobs=-1)(delayed(calculate_distance_for_single_test_example)(W_train, W_test[i, :], MCD) for i in range(M))
-    distance_matrix = np.array(results)
-    return distance_matrix
+# def calculate_mahalanobis_distance_parallel(W_train, W_test, MCD):
+#     M = W_test.shape[0]
+#     # Utiliser joblib pour paralléliser le calcul des distances
+#     results = Parallel(n_jobs=-1)(delayed(calculate_distance_for_single_test_example)(W_train, W_test[i, :], MCD) for i in range(M))
+#     distance_matrix = np.array(results)
+#     return distance_matrix
     
   
 
@@ -36,12 +37,11 @@ class PCA_MAHALANOBIS(OODBaseDetector):
       super().__init__()
 
       self.n_components = n_components
-      self.A_train = None
       self.W_train = None
       self.H_Base = None
       self.PCA = None
       self.Scaler = None
-      self.Centroids = None
+      self.MCD = None
 
 
     def _fit_to_dataset(self, fit_dataset):
@@ -55,21 +55,18 @@ class PCA_MAHALANOBIS(OODBaseDetector):
          A_train = A_train[:,:, 0, 0]
       # Standardizing the features
       self.Scaler = StandardScaler()
-      A_train = self.Scaler.fit_transform(A_train)
       A_train_scaled = self.Scaler.fit_transform(A_train)
       # print("after scaling : ", A_train_scaled.shape)
       self.A_in = A_train_scaled
       # Appliquer PCA
       pca = PCA(n_components=self.n_components)
       self.W_train = pca.fit_transform(self.A_in)   # La matrice des coefficients W (N , K) de A_train dans la base H_base (K , L)
-      self.H_Base = pca.components_ # la base H_base (K , L)
+      self.H_Base = pca.components_ # la matrice de covariance ou notamment la base H_base (K , L)
       self.PCA = pca
-
       print("the shape of W_train is  : ", self.W_train.shape)
       print("the shape of H_base is  : ", self.H_Base.shape)
       self.MCD = MinCovDet().fit(self.W_train)
 
-  
       return
 
     def _score_tensor(self, inputs):
@@ -80,12 +77,15 @@ class PCA_MAHALANOBIS(OODBaseDetector):
          
       A_test = features[0].cpu()
       A_test = self.op.convert_to_numpy(A_test) # la matrice des données de test A_test
-      A_test = self.Scaler.transform(A_test)
       A_test_scaled = self.Scaler.transform(A_test)
+    #   A_test_scaled = self.Scaler.transform(A_test)
       W_test = self.PCA.transform(A_test_scaled) # la matrice des coefficients de A_test dans la base H avec taille (N_test, K)
       # calculer la distance mahalanobis entre W_test et W_train
-      distance_matrix = calculate_mahalanobis_distance_parallel(self.W_train, W_test, self.MCD)
+    #   distance_matrix = calculate_mahalanobis_distance_parallel(self.W_train, W_test, self.MCD)
+      # Calculate the mahalanobis distance between each sample and the centroids
+      distance_matrix = cdist(W_test, self.W_train, 'mahalanobis', VI=self.MCD.precision_)
       min_distance = np.min(distance_matrix, axis=1)
+      
 
       return min_distance
 

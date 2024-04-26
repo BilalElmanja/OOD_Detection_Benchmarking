@@ -48,12 +48,12 @@ class Texture(Dataset):
 
 transform = transforms.Compose([
     # ResNet models expect 3-channel images, but texture is already in this format
-    transforms.Resize((32, 32)),  # Ensuring the image size is 32x32
+    transforms.Resize((32, 32)),   # (32, 32) for cifar data, Ensuring the image size is 32x32
     transforms.RandomHorizontalFlip(),  # A common augmentation for image data
     transforms.ToTensor(),  # Convert images to PyTorch tensors
     # Normalize each channel of the texture images using mean and std
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
- 
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))  # for cifar data"
+    # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
 def get_train_dataset_texture():

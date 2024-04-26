@@ -4,7 +4,7 @@ from sklearn.decomposition import NMF
 from scipy.spatial.distance import mahalanobis
 from sklearn.covariance import MinCovDet
 from scipy.optimize import minimize
-
+from scipy.spatial.distance import cdist
 from joblib import Parallel, delayed
 import cupy as cp
 
@@ -64,7 +64,7 @@ class NMF_Unique_Class_Mahalanobis(OODBaseDetector):
         for class_label in self.classes_:
 
             A_train_class = self.A_in[self.labels_train == class_label]
-            nmf = NMF(n_components=self.n_components, init='random', random_state=42)
+            nmf = NMF(n_components=self.n_components, init='random', random_state=42, max_iter=400)
             W_train_class = nmf.fit_transform(A_train_class)
             H_Base_class = nmf.components_
             
@@ -93,23 +93,26 @@ class NMF_Unique_Class_Mahalanobis(OODBaseDetector):
     #   A_test_scaled = self.Scaler.transform(A_test)
       A_test = A_test - np.min(A_test) + 1e-5
       min_distances = np.inf * np.ones(A_test.shape[0])
-        
+      print("shape of min_distances is : ", min_distances.shape)
       for class_label in self.classes_:
           W_train_class = self.W_trains[class_label]
           MCD = self.MCDs[class_label]  # Get the precision matrix for the class
           H_base_class = self.H_Bases[class_label]
+          nmf = self.NMFs[class_label]
           # Initialisation de W_test comme une matrice aplatie (pour l'optimisation)
-          initial_W_test_flat = np.random.randn(A_test.shape[0] * W_train_class.shape[1])
+        #   initial_W_test_flat = np.random.randn(A_test.shape[0] * W_train_class.shape[1])
           # Minimiser la perte de reconstruction
-          result = minimize(reconstruction_loss, initial_W_test_flat, args=(A_test, H_base_class), method='L-BFGS-B')
+        #   result = minimize(reconstruction_loss, initial_W_test_flat, args=(A_test, H_base_class), method='L-BFGS-B')
           # Remodeler W_test dans sa forme originale (M, K)
-          W_test_optimized = result.x.reshape(A_test.shape[0], W_train_class.shape[1])
+        #   W_test_optimized = result.x.reshape(A_test.shape[0], W_train_class.shape[1])
+          W_test = nmf.transform(A_test)
           
           # Calculate Mahalanobis distance using the parallel function
-          distance_matrix = calculate_mahalanobis_distance_parallel(W_train_class, W_test_optimized, MCD)
+          distance_matrix = cdist(W_test, W_train_class, 'mahalanobis', VI=MCD.precision_)
           # For each test sample, find the minimum Mahalanobis distance across classes
           min_distance = np.min(distance_matrix, axis=1)
           min_distances = np.minimum(min_distances, min_distance)
+          
       
       return min_distances
 

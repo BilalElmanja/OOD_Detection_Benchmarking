@@ -8,4 +8,6 @@ from .Tin import Tiny, get_test_dataset_Tiny, get_train_dataset_Tiny
 from .openimage_o import get_test_dataset_OpenImage_O
 from .NINCO import get_test_dataset_NINCO
 from .ssb_hard import get_test_dataset_SSB_hard
+from .imagenet import get_test_dataset_ImageNet_1K, get_train_dataset_ImageNet_1K
+
 

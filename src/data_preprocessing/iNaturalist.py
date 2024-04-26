@@ -33,7 +33,7 @@ class iNaturalist(Dataset):
                 self.image_labels.append(self.class_to_idx[cls_name])
 
     def __len__(self):
-        return len(self.image_paths)
+        return 1_000  #len(self.image_paths)
 
     def __getitem__(self, idx):
         img_path = self.image_paths[idx]
@@ -48,11 +48,11 @@ class iNaturalist(Dataset):
 
 transform = transforms.Compose([
     # ResNet models expect 3-channel images, but inaturalist is already in this format
-    transforms.Resize((32, 32)),  # Ensuring the image size is 32x32
+    transforms.Resize((224, 224)),  # Ensuring the image size is 32x32
     transforms.RandomHorizontalFlip(),  # A common augmentation for image data
     transforms.ToTensor(),  # Convert images to PyTorch tensors
     # Normalize each channel of the inaturalist images using mean and std
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
  
 ])
 

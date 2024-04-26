@@ -8,30 +8,31 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.covariance import MinCovDet
 from scipy.spatial.distance import mahalanobis
 from joblib import Parallel, delayed
+from scipy.spatial.distance import cdist
 import cupy as cp
 
-def calculate_distance_for_single_test_example(W_train, test_example, MCD):
-    N = W_train.shape[0]
-    distances = np.zeros(N)
-    for j in range(N):
-        # diff = W_train[j, :] - test_example
-        distance = mahalanobis(W_train[j, :], test_example, MCD.precision_)
-        distances[j] = distance
-    return distances
+# def calculate_distance_for_single_test_example(W_train, test_example, MCD):
+#     N = W_train.shape[0]
+#     distances = np.zeros(N)
+#     for j in range(N):
+#         # diff = W_train[j, :] - test_example
+#         distance = mahalanobis(W_train[j, :], test_example, MCD.precision_)
+#         distances[j] = distance
+#     return distances
 
-def calculate_mahalanobis_distance_parallel(W_train, W_test, MCD):
-    M = W_test.shape[0]
-    # Utiliser joblib pour paralléliser le calcul des distances
-    results = Parallel(n_jobs=-1)(delayed(calculate_distance_for_single_test_example)(W_train, W_test[i, :], MCD) for i in range(M))
-    distance_matrix = np.array(results)
-    return distance_matrix
+# def calculate_mahalanobis_distance_parallel(W_train, W_test, MCD):
+#     M = W_test.shape[0]
+#     # Utiliser joblib pour paralléliser le calcul des distances
+#     results = Parallel(n_jobs=-1)(delayed(calculate_distance_for_single_test_example)(W_train, W_test[i, :], MCD) for i in range(M))
+#     distance_matrix = np.array(results)
+#     return distance_matrix
 
 
-def reconstruction_loss(W_flat, A_test, H_base):
-    """Calculer la perte de reconstruction ||A_test - W_test * H_base||_2."""
-    W_test = W_flat.reshape(A_test.shape[0], -1)
-    reconstruction = np.dot(W_test, H_base)
-    return np.linalg.norm(A_test - reconstruction)
+# def reconstruction_loss(W_flat, A_test, H_base):
+#     """Calculer la perte de reconstruction ||A_test - W_test * H_base||_2."""
+#     W_test = W_flat.reshape(A_test.shape[0], -1)
+#     reconstruction = np.dot(W_test, H_base)
+#     return np.linalg.norm(A_test - reconstruction)
 
 
 class NMF_MAHALANOBIS(OODBaseDetector):
@@ -56,22 +57,14 @@ class NMF_MAHALANOBIS(OODBaseDetector):
       A_train = training_features[0][0]
       if len(A_train.shape) > 2:
          A_train = A_train[:,:, 0, 0]
+
       A_train = self.op.convert_to_numpy(A_train)
-      self.Scaler = StandardScaler()
-      A_train = self.Scaler.fit_transform(A_train)
-      self.A_in = A_train - np.min(A_train) + 1e-5
-      
-      
-      # The training labels
-      labels_train = training_features[1]["labels"]
-      
-      # Appliquer NMF
-      nmf = NMF(n_components=self.n_components, init='random', random_state=42)
-      self.W_train = nmf.fit_transform(self.A_in)  # La matrice des coefficients (ou des caractéristiques latentes)
-      self.H_Base = nmf.components_  # La matrice des composantes (ou la base)
+
+      self.NMF = NMF(n_components=self.n_components, init='random', random_state=42, max_iter=400)
+      self.W_train = self.NMF.fit_transform(A_train)  # project des données entrainement sur nouvelle base H_base
+      self.H_Base = self.NMF.components_  # La matrice des composantes (ou la base)
       print("the shape of H_base is : ", self.H_Base.shape)
       print("the shape of W_train is  : ", self.W_train.shape)
-
       self.MCD = MinCovDet().fit(self.W_train)
   
       return
@@ -84,16 +77,18 @@ class NMF_MAHALANOBIS(OODBaseDetector):
 
       A_test = features[0].cpu()
       A_test = self.op.convert_to_numpy(A_test) # la matrice des données de test A_test
-      A_test = self.Scaler.transform(A_test)
-      A_test = A_test - np.min(A_test) + 1e-5
+    #   A_test = self.Scaler.transform(A_test)
+    #   A_test = A_test - np.min(A_test) + 1e-5
       # Initialisation de W_test comme une matrice aplatie (pour l'optimisation)
-      initial_W_test_flat = np.random.randn(A_test.shape[0] * self.W_train.shape[1])
+    #   initial_W_test_flat = np.random.randn(A_test.shape[0] * self.W_train.shape[1])
       # Minimiser la perte de reconstruction
-      result = minimize(reconstruction_loss, initial_W_test_flat, args=(A_test, self.H_Base), method='L-BFGS-B')
+    #   result = minimize(reconstruction_loss, initial_W_test_flat, args=(A_test, self.H_Base), method='L-BFGS-B')
       # Remodeler W_test dans sa forme originale (M, K)
-      W_test_optimized = result.x.reshape(A_test.shape[0], self.W_train.shape[1])
+    #   W_test_optimized = result.x.reshape(A_test.shape[0], self.W_train.shape[1])
+      W_test = self.NMF.transform(A_test)
+    #   print("w_test shape is : ", W_test.shape)
       # calculer la distance mahalanobis entre W_test et W_train
-      distance_matrix = calculate_mahalanobis_distance_parallel(self.W_train, W_test_optimized, self.MCD)
+      distance_matrix = cdist(W_test, self.W_train, 'mahalanobis', VI=self.MCD.precision_)
       min_distance = np.min(distance_matrix, axis=1)
 
       return min_distance

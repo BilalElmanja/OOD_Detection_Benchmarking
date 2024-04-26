@@ -21,14 +21,11 @@ class PCA_KNN(OODBaseDetector):
     ):
       super().__init__()
 
-      self.A_train = None
       self.W_train = None
       self.H_Base = None
       self.PCA = None
       self.Scaler = None
-      self.Centroids = None
       self.n_components = n_components
-
 
     def _fit_to_dataset(self, fit_dataset):
 
@@ -44,11 +41,6 @@ class PCA_KNN(OODBaseDetector):
       A_train_scaled = self.Scaler.fit_transform(A_train)
       # print("after scaling : ", A_train_scaled.shape)
       self.A_in = A_train_scaled
-      
-      
-      # The training labels
-      labels_train = training_features[1]["labels"]
-      
       # Appliquer PCA
       pca = PCA(n_components=self.n_components)
       self.W_train = pca.fit_transform(self.A_in)   # La matrice des coefficients W (N , K) de A_train dans la base H_base (K , L)
@@ -65,25 +57,20 @@ class PCA_KNN(OODBaseDetector):
       features, logits = self.feature_extractor.predict_tensor(inputs)
       if len(features[0].shape) > 2:
          features[0] = features[0][:,:, 0, 0]
-
       A_test = features[0].cpu()      
-      A_test = self.op.convert_to_numpy(A_test) # la matrice des données de test A_test
-
+      # la matrice des données de test A_test
+      A_test = self.op.convert_to_numpy(A_test) 
       A_test_scaled = self.Scaler.transform(A_test)
-      W_test = self.PCA.transform(A_test_scaled) # la matrice des coefficients de A_test dans la base H avec taille (N_test, K)
-      
+      # la matrice des coefficients de A_test dans la base H avec taille (N_test, K)
+      W_test = self.PCA.transform(A_test_scaled) 
       # Définir le nombre de voisins à considérer
       k = 50
-
       # Créer et ajuster le modèle kNN
       neigh = NearestNeighbors(n_neighbors=k)
       neigh.fit(self.W_train)
-
       # Trouver les k plus proches voisins de W_test
       distances, indices = neigh.kneighbors(W_test)
-
       min_distance = np.min(distances, axis=1)
-
       return min_distance
 
     @property

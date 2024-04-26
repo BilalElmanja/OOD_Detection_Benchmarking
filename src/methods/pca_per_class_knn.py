@@ -84,7 +84,7 @@ class PCA_unique_class_KNN(OODBaseDetector):
           W_test_class = pca.transform(A_test_scaled)  # Transformer les données de test
           # print("shape of  W_test_class class {}: ".format(class_label), W_test_class.shape)
           # Calculer la distance aux voisins les plus proches dans l'espace PCA de la classe
-          neigh = NearestNeighbors(n_neighbors=20)
+          neigh = NearestNeighbors(n_neighbors=50)
           W_train_class = self.W_trains[class_label]
           neigh.fit(W_train_class)  # Adapter aux données d'entraînement de la classe
           distances, _ = neigh.kneighbors(W_test_class)  # Obtenir les distances aux k plus proches voisins
