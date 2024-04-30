@@ -13,7 +13,7 @@ from torch.utils.data import Subset
 import sys
 sys.path.append("../")
 from oodeel.methods import MLS, Energy, Entropy, DKNN, Gram, Mahalanobis, ODIN, VIM
-from methods import  K_Means, K_Means_Mahalanobis, PCA_KNN, NMF_KNN, PCA_MAHALANOBIS, NMF_MAHALANOBIS, PCA_unique_class_KNN, PCA_Unique_Class_Mahalanobis, NMF_Unique_Classes_KNN, NMF_Unique_Class_Mahalanobis
+from methods import  K_Means, K_Means_Mahalanobis, PCA_KNN, NMF_KNN, PCA_MAHALANOBIS, NMF_MAHALANOBIS, PCA_unique_class_KNN, PCA_Unique_Class_Mahalanobis, NMF_Unique_Classes_KNN, NMF_Unique_Class_Mahalanobis, NMF_NORM, PCA_NORM, CRAFT_PER_CLASS_NMF
 from data_preprocessing import get_train_dataset_cifar10, get_test_dataset_cifar10, get_train_dataset_cifar100, get_test_dataset_cifar100, get_test_dataset_places365, get_test_dataset_svhn, get_test_dataset_texture, get_test_dataset_Tiny, get_test_dataset_NINCO, get_test_dataset_OpenImage_O, get_train_dataset_inaturalist, get_test_dataset_SSB_hard
 from models import load_pretrained_weights_32
 from oodeel.eval.metrics import bench_metrics
@@ -64,11 +64,11 @@ def load_datasets(experiment: str = "cifar100", batch_size: int = 128):
         ds_fit = get_train_dataset_cifar10()
         ds_in = get_test_dataset_cifar10()
         ds_out_dict = {
-            "cifar100": get_test_dataset_cifar100(),
+            # "cifar100": get_test_dataset_cifar100(),
             "svhn" : get_test_dataset_svhn(),
-            "places365" : get_test_dataset_places365(),
-            "texture" : get_test_dataset_texture(),
-            "Tin": get_test_dataset_Tiny(),
+            # "places365" : get_test_dataset_places365(),
+            # "texture" : get_test_dataset_texture(),
+            # "Tin": get_test_dataset_Tiny(),
         }
 
      # CIFAR100
@@ -118,140 +118,129 @@ def Timer():
 class BenchmarkTorch:
     REACT_DETECTORS = ["MLS", "MSP", "Energy", "Entropy", "ODIN"]
     DETECTORS_CONFIG = {
-        "MLS": {
-            "class": MLS,
-            "kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "MSP": {
-            "class": MLS,
-            "kwargs": {
-                "cifar10": dict(output_activation="softmax"),
-                "cifar100":dict(output_activation="softmax"),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "Energy": {
-            "class": Energy,
-            "kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "Entropy": {
-            "class": Entropy,
-            "kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "ODIN": {
-            "class": ODIN,
-            "kwargs": {
-                "cifar10": dict(temperature=1000),
-                "cifar100":dict(temperature=1000),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-        },
-        "DKNN": {
-            "class": DKNN,
-            "kwargs": {
-                "cifar10": dict(nearest=50),
-                "cifar100":dict(nearest=50),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "Mahalanobis": {
-            "class": Mahalanobis,
-            "kwargs": {
-                "cifar10": dict(),
-                "cifar100":dict(),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        # "VIM": {
-        #     "class": VIM,
+        # "MLS": {
+        #     "class": MLS,
         #     "kwargs": {
-        #         "mnist": dict(princ_dims=0.99),
-        #         "cifar10": dict(princ_dims=40),
-        #         "imagenet": dict(princ_dims=0.99),
+        #         "cifar10": dict(),
+        #         "cifar100":dict(),
         #     },
         #     "fit_kwargs": {
-        #         "mnist": dict(feature_layers_id=[-2]),
-        #         "cifar10": dict(feature_layers_id=[-2]),
-        #         "imagenet": dict(feature_layers_id=[-2]),
+        #         "cifar10": dict(),
+        #         "cifar100":dict(),
         #     },
         # },
-        # # "Gram": {
-        # #     "class": Gram,
+        # "MSP": {
+        #     "class": MLS,
+        #     "kwargs": {
+        #         "cifar10": dict(output_activation="softmax"),
+        #         "cifar100":dict(output_activation="softmax"),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(),
+        #         "cifar100":dict(),
+        #     },
+        # },
+        # "Energy": {
+        #     "class": Energy,
+        #     "kwargs": {
+        #         "cifar10": dict(),
+        #         "cifar100":dict(),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(),
+        #         "cifar100":dict(),
+        #     },
+        # },
+        # "Entropy": {
+        #     "class": Entropy,
+        #     "kwargs": {
+        #         "cifar10": dict(),
+        #         "cifar100":dict(),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(),
+        #         "cifar100":dict(),
+        #     },
+        # },
+        # "ODIN": {
+        #     "class": ODIN,
+        #     "kwargs": {
+        #         "cifar10": dict(temperature=1000),
+        #         "cifar100":dict(temperature=1000),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(),
+        #         "cifar100":dict(),
+        #     },
+        # },
+        # "DKNN": {
+        #     "class": DKNN,
+        #     "kwargs": {
+        #         "cifar10": dict(nearest=50),
+        #         "cifar100":dict(nearest=50),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "Mahalanobis": {
+        #     "class": Mahalanobis,
+        #     "kwargs": {
+        #         "cifar10": dict(),
+        #         "cifar100":dict(),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # # "VIM": {
+        # #     "class": VIM,
         # #     "kwargs": {
-        # #         "mnist": dict(quantile=0.2),
-        # #         "cifar10": dict(),
-        # #         "imagenet": dict(orders=[1, 2, 3, 4, 5]),
+        # #         "mnist": dict(princ_dims=0.99),
+        # #         "cifar10": dict(princ_dims=40),
+        # #         "imagenet": dict(princ_dims=0.99),
         # #     },
         # #     "fit_kwargs": {
-        # #         "mnist": dict(feature_layers_id=["relu1", "relu2"]),
-        # #         "cifar10": dict(
-        # #             feature_layers_id=[
-        # #                 "layer1.2.conv2",
-        # #                 "layer1.2.relu",
-        # #                 "layer2.2.conv2",
-        # #                 "layer2.2.relu",
-        # #                 "layer3.2.conv2",
-        # #                 "layer3.2.relu",
-        # #             ]
-        # #         ),
-        # #         "imagenet": dict(
-        # #             feature_layers_id=[
-        # #                 "maxpool",
-        # #                 "layer1",
-        # #                 "layer2",
-        # #                 "layer3",
-        # #                 "layer4",
-        # #                 "avgpool",
-        # #             ]
-        # #         ),
+        # #         "mnist": dict(feature_layers_id=[-2]),
+        # #         "cifar10": dict(feature_layers_id=[-2]),
+        # #         "imagenet": dict(feature_layers_id=[-2]),
         # #     },
         # # },
-        "Kmeans": {
-            "class": K_Means,
-            "kwargs": {
-                "cifar10": dict( n_centroids = 10),
-                "cifar100":dict(n_centroids = 10),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        # "Kmeans_Mahalanobis": {
-        #     "class": K_Means_Mahalanobis,
+        # # # "Gram": {
+        # # #     "class": Gram,
+        # # #     "kwargs": {
+        # # #         "mnist": dict(quantile=0.2),
+        # # #         "cifar10": dict(),
+        # # #         "imagenet": dict(orders=[1, 2, 3, 4, 5]),
+        # # #     },
+        # # #     "fit_kwargs": {
+        # # #         "mnist": dict(feature_layers_id=["relu1", "relu2"]),
+        # # #         "cifar10": dict(
+        # # #             feature_layers_id=[
+        # # #                 "layer1.2.conv2",
+        # # #                 "layer1.2.relu",
+        # # #                 "layer2.2.conv2",
+        # # #                 "layer2.2.relu",
+        # # #                 "layer3.2.conv2",
+        # # #                 "layer3.2.relu",
+        # # #             ]
+        # # #         ),
+        # # #         "imagenet": dict(
+        # # #             feature_layers_id=[
+        # # #                 "maxpool",
+        # # #                 "layer1",
+        # # #                 "layer2",
+        # # #                 "layer3",
+        # # #                 "layer4",
+        # # #                 "avgpool",
+        # # #             ]
+        # # #         ),
+        # # #     },
+        # # # },
+        # "Kmeans": {
+        #     "class": K_Means,
         #     "kwargs": {
         #         "cifar10": dict( n_centroids = 10),
         #         "cifar100":dict(n_centroids = 10),
@@ -261,41 +250,129 @@ class BenchmarkTorch:
         #         "cifar100": dict(feature_layers_id=[-2]),
         #     },
         # },
-        "PCA_KNN": {
-            "class": PCA_KNN,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100":dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "PCA_Mahalanobis": {
-            "class": PCA_MAHALANOBIS,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100":dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "NMF_KNN": {
-            "class": NMF_KNN,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100":dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "NMF_Mahalanobis": {
-            "class": NMF_MAHALANOBIS,
+        # # "Kmeans_Mahalanobis": {
+        # #     "class": K_Means_Mahalanobis,
+        # #     "kwargs": {
+        # #         "cifar10": dict( n_centroids = 10),
+        # #         "cifar100":dict(n_centroids = 10),
+        # #     },
+        # #     "fit_kwargs": {
+        # #         "cifar10": dict(feature_layers_id=[-2]),
+        # #         "cifar100": dict(feature_layers_id=[-2]),
+        # #     },
+        # # },
+        # "PCA_KNN": {
+        #     "class": PCA_KNN,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100":dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "PCA_Mahalanobis": {
+        #     "class": PCA_MAHALANOBIS,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100":dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "NMF_KNN": {
+        #     "class": NMF_KNN,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100":dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "NMF_Mahalanobis": {
+        #     "class": NMF_MAHALANOBIS,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100": dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "PCA_per_class_knn": {
+        #     "class": PCA_unique_class_KNN,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100": dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "pca_per_class_mahalanobis": {
+        #     "class": PCA_Unique_Class_Mahalanobis,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100": dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "NMF_per_class": {
+        #     "class": NMF_Unique_Classes_KNN,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100": dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "NMF_per_class_mahalanobis": {
+        #     "class": NMF_Unique_Class_Mahalanobis,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100": dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "NMF_NORM": {
+        #     "class": NMF_NORM,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100": dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        # "PCA_NORM": {
+        #     "class": PCA_NORM,
+        #     "kwargs": {
+        #         "cifar10": dict( n_components=16),
+        #         "cifar100": dict( n_components=16),
+        #     },
+        #     "fit_kwargs": {
+        #         "cifar10": dict(feature_layers_id=[-2]),
+        #         "cifar100": dict(feature_layers_id=[-2]),
+        #     },
+        # },
+        "CRAFT_PER_CLASS_NMF": {
+            "class": CRAFT_PER_CLASS_NMF,
             "kwargs": {
                 "cifar10": dict( n_components=16),
                 "cifar100": dict( n_components=16),
@@ -305,50 +382,7 @@ class BenchmarkTorch:
                 "cifar100": dict(feature_layers_id=[-2]),
             },
         },
-        "PCA_per_class_knn": {
-            "class": PCA_unique_class_KNN,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100": dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "pca_per_class_mahalanobis": {
-            "class": PCA_Unique_Class_Mahalanobis,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100": dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "NMF_per_class": {
-            "class": NMF_Unique_Classes_KNN,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100": dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
-        "NMF_per_class_mahalanobis": {
-            "class": NMF_Unique_Class_Mahalanobis,
-            "kwargs": {
-                "cifar10": dict( n_components=16),
-                "cifar100": dict( n_components=16),
-            },
-            "fit_kwargs": {
-                "cifar10": dict(feature_layers_id=[-2]),
-                "cifar100": dict(feature_layers_id=[-2]),
-            },
-        },
+
     }
 
     def __init__(
@@ -648,7 +682,7 @@ class BenchmarkTorch:
 
 
 if __name__ == "__main__":
-    dir_path = os.path.expanduser("~/") + "./results/cifar10_layer_2"
+    dir_path = os.path.expanduser("~/") + "./results/cifar10_layer_2_norm"
     os.makedirs(dir_path, exist_ok=True)
 
     # run benchmark
